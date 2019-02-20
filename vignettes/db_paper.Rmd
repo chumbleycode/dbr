@@ -1,0 +1,173 @@
+---
+title: "Vignette Title"
+author: "Vignette Author"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+  
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = TRUE)
+knitr::opts_knit$set(root.dir = "../")
+```
+
+# One simple approach
+
+We first revisit the basic strategy or spirit of TELIS. The goal there was to implicate some transcription factor - say CREB3 - as the explanation for an observed set of differentialy expressed genes. The approach has three steps which we briefly revisit now. First, identify as "differentially expressed" some subset of $n_s>0$ genes from some prespecified gene population of $n_p>n_s$ genes\footnote{By "gene population" we mean the set of genes which could $in$ $principle$ have been identified as differentially expressed. We therefore exclude genes with insufficient functional variation to detect any differential expression. Note that the classification of "differential expression" here is $not$ necessarily a statistical inference in itself: it's only purpose is to induce a canditate gene set $\omega$ which will form the basis of downstream statistical inference, as explained next.}. Second, use external bioinformatic information to evaluate the average number of CREB3 dna binding motifs within the dna of our differentially expressed genes\footnote{We here define as "motif" any binding site with high affinity for either one or two transcription factors cooperatively. We use the notation $a$, $b$ and $a::b$ for motifs binding to $a$,$b$ or both respectively.}. Third, compare this latter with the average number of CREB3 motifs in a $random$ subset or sample of $n_s$ genes from the entire population of $n_p$ genes within a parametric, frequentist hypothesis testing framework: thereby yeilding a p-value about the representativeness of our $n_s$ sample. This p-value reveals whether our gene set contains a suprising number of motifs, which is taken as circumstantial evidence that the action of this transcription factor mediated differential expression. It complements and extends traditional gene-by-gene analyses.
+
+# Slightly more formally:
+
+Steps 2 and 3 exploit publically available dna data repositories that allow us to calculate the number of binding motifs, $m_{ij}$, for each transcription factor $j$ within each gene $i$. This dna data can be arranged as a gene x motif matrix $\textbf{M} = (m_{ij})$. $\textbf{M}$ is an $n_p \times n_t$ matrix linking our gene population $i \in \{1,2,...,n_p \}$ to the set of binding motifs $j \in \{1,2,...,n_t \}$. Note that $m_{ij}=k p_{ij}$ where $k$ is the total number of positions on the genome that host a regulator and $p_{ij}$ is the share of all these sites that bind regulator $j$ in gene $i$.
+
+Let $\omega$ denote our $n_s$ differentially expressed genes. For example, we define $\omega$ to be the top ranking $n_s = 100$ differentially expressed genes. Then $\{m_{ij}: i \in \omega \}$ is the corresponding set of $n_s$ motif counts for regulator $j$ in each of these differentially expressed genes. This is simply the relevent $n_s$ rows of the $j$th column of $\textbf{M}$.  Let $T_{\omega j}:=\frac{1}{n_s}\sum_{i \in \omega}m_{ij}$ denote the $mean$ number of these binding sites across our gene set $\omega$. We will use $T_j$ as notational shorthand for this latter quantity, but the dependence on $\omega$ is implied. If $T_j$ is "relatively large", then the gene set is relatively enriched with motif $j$. Intuitively, this motif is then implicated as a possible root cause of the observed differential gene expression which characterizes $\omega$. In the sense discussed above, $T_j$ may then be interpreted as a test of differential regulation by $j$. 
+
+The parametric null distribution for $T_j$ implicitly assumes that the number of binding sites within each of our $n_s$ genes is independently and identically distributed: each being the (random) number of sites found in a single gene sampled uniformly at random with replacement from the entire gene population. Postponing the question of any biological dependence between genes, note that the elements of $\{m_{ij}: i \in \omega \}$ cannot be exactly independent or identically distributed (having selected the first gene in $\omega$ at random from the gene population and called it "differentially expressed", the population from which to select the second gene is not "identical" because it is missing the previously selected gene). While this approximation admittedly improves with the $n_p/n_s$, we below consider the more natural null: simple random samples without replacement. This may be useful if the gene population is relatively small or in calculating statistics other than the average motif enrichment discussed above. In fact we can use (non-parametric) Monte Carlo sampling without replacement to calculate the null distribution of any statistic, e.g. the mean differential effect within all genes targeted by a transcription $\sum_i \theta_{i}[m_{ij}>0]$, where $\theta_{i}$ is an estimate of the per-gene differential expression measure, $m_{ij}$ in the motif count of regulator $j$ in gene $i$ and $[\cdot ]$ is Iverson notation for the indicator function. 
+
+Sampling without replacement from the gene population provides one possible outcome $\omega$ from the sample space $\Omega_{n_p,n_s}$ of $\binom{n_p}{n_s}$ possible gene sets of cardinality $n_s$ within a gene population of size $n_p$. Now $T_j$ is a random variable\footnote{$T_j:\Omega_{n_p,n_s}\to \mathbb Q_{\geq 0}$ with domain $\Omega_{n_p,n_s}$ and codomain the set of non-negative rational numbers.} whose null distribution is therefore functionally determined by our null hypothesis on $\Omega_{n_p,n_s}$. The null hypothesis we consider is equivalent to $\omega \sim U(\Omega_{n_p,n_s})$: i.e. the gene set is chosen uniformly at random from $\Omega_{n_p,n_s}$. Then the chance of each an every gene set is just $1/|\Omega_{n_p,n_s}|=1/\binom{n_p}{n_s}$, where $|\cdot|$ is the set cardinality function. Then $P(T_{j}=t|n_p,n_s)= \frac{1}{|\Omega_{n_p,n_s}|}\sum_{\omega \in \Omega_{n_p,n_s}}[T_{\omega j}=t]$, where $[\cdot]$  is the boolean indicator function. Classical tests and p-values then follow simply, for example by finding a critical value $t: P(T_j \geq t)=\alpha$ or, recalling that we have already defined a set of enrichment scores $\{T_1,T_2,..T_k\}$, choosing $t:P(\cup_j \{T_j\geq t\})=\alpha$ which controls the family-wise error rate, etc. Because $|\Omega_{n_p,n_s}|$ is too large to conveniently enumerate, we pursue a simple Monte Carlo approximation: sample $100000$ times from $\Omega_{n_p,n_s}$ and determine the corresponding approximate null distribution for $T_j$.  Computationally, we calculate $100000$ samples from the null distribution as (the collumns of) $(\textbf{Q}* \textbf{M})/n_s$, where $\textbf{M}$ is still our $n_p \times n_t$ gene x binding motif matrix and $\textbf{Q}$ is a $10000 \times n_p$ matrix whose boolean rows each indicate one of $100000$ elements sampled uniformly at random without replacement from $\Omega_{n_p,n_s}$. If we observe a relatively high value $t_j$, relative to this Monte Carlo null distribution we conclude that there is "over-representation" of a regulator in promoters of differentially expressed genes, and we report a one-tailed p-value gauging statistical significance.
+
+Recall our two assumptions, fixed $n$ and random sampling of gene sets $\omega$. The former assumption is inconvenient when $n$ is itself chosen adaptively based on the data. To avoid redefining our sample space, so that $n$ is formally a random variable, we follow other authors and simply condition all inference on $n$ (see below for details on defining $\omega$). The latter assumption seems strong: expression of genes is clustered or correlated, so it would seem that not all $\omega$ are equally likely as assumed by  $\omega \sim U(\Omega_{n_p,n_s})$. Yet recall that $\omega$ is selected based on differential expression, so it is only relevant whether the gene-specific estimators of differential expression are clustered or correlated. We assume that two estimators are correlated if and only if some co-regulator is responsible for their coordinated differential expression. But then there will be no correlation or clustering between estimators under the null hypothesis, all $\omega$ will be equally likely and $\omega \sim U(\Omega_{n_p,n_s})$ appears defensible. 
+
+
+
+For the case where $n$ is fixed a priori, we use.
+
+```{r, eval=FALSE}
+
+n_fixed = 50
+responsive_str = 
+  voom(counts = counts,
+       design = design) %>%  
+  lmFit %>%
+  eBayes %>%
+  topTable(number = n_fixed) %>% 
+  rownames
+
+```
+
+For the case where $n$ is adaptive we use:
+
+
+```{r, eval=FALSE}
+responsive_str = 
+  voom(counts = counts ,
+       design = design) %>%  
+  lmFit %>%
+  eBayes %>% 
+  topTable(coef = of_interest, n = Inf) %>%
+  rownames_to_column(var = "gene") %>% 
+  filter(P.Value <= 0.05) 
+```
+
+
+# Revisiting step 1: preselecting a gene set 
+
+We have shown how to test whether individual motifs are implicated, controlling for multiplicity. This side steps a key question of specificity: if two regulators are deemed significant, there is potential ambiguity. Either both upstream transcription factors are responsible for the pattern of differential expression $\omega$, or one may be responsible: the other simply having a similar or "confounded" relative enrichment pattern. This section proposes an alternative with improves both false positives - due to this confounding - and false negatives, due to insufficient power. Our first motivation is to avoid falsely attributing differential expression to one regulator when there exists an equally strong canditate regulator with a similar motif distribution over genes. The parallel, univariate tests for transcriptional enrichment discussed above do not offer such adjustments. The second motivation is to gain precision by the law of large numbers, by pooling data over $all$ $n_p$ genes in the gene population - not just the $n_s$ genes in the differentially expressed set - into the estimation of a single scalar parameter. 
+
+To do this we relax the above requirement that each gene be first classified as differentially expressed or not, because this classification is heuristic and potentially looses information. We instead attempt to predict variation in the estimated $magnitude$ of differential expression  $\theta_i$ across $all$ genes in the gene population. We do this by considering the motif frequency $m_{ij}$ of an interesting transcription factor $j$. If this frequency predicts the strength of differential expression, then this motif is implicated in the differential expression. This relationship may be assessed in many ways, e.g. via some non-parametric or linear regression model $E(\theta_i|m_{ij})=a+b_jm_{ij}$. The parameter $b_j$ amounts to an interaction term, wherein the effect of some exposure itself depends on the motif density, i.e. larger in genes with more motifs for $j$. In a multilevel modeling perspective, the parameter $b_j$ might also be viewed as a second level regression parameter controlling the effect of motif density on the (first level) gene-specific random effects which relate between-subject exposure variation to between-subject variation in the expression of the specific gene. The regression function for subject $s$ of gene $i$ on exposure $x_s$ is $E(y_{is}|x_s, z_s) = \alpha + \theta_{i}x_{s} + C$, with $C = \sum_k b_{ki} z_{ks}$ the linear effect of some covariates $\{z_{k}\}$. One benefit of a linear approach is that we can easily infer the partial effect of transcription factor $j$ on differential\ expression, adjusting for the potentially confounding effect of other transcription factor(s). This is just $E(\theta_i|M)=a+\sum_jb_jm_{ij}$. As discussed above, this is pertinant to avoid falsely attributing differential expression to one regulator $j$ when there exists an equally strong canditate $j'$ with a similar, confounded motif distribution over genes. Such motif covariation can be directly inspected in this linear framework, while it is harder to study in any approach based on preselecting genes (see appendix). Note also the increased power: this approach pools data over all genes and subjects into the estimation of a single scalar parameter $b_j$. We emphasise that, by focusing our inference on only one (or a small number) of motifs, we eschew the usual adjustments multiple comparisons over genes, which notoriously inflates false negatives. 
+
+# Appendix
+
+# The TFBM matrix
+
+In this work we only require that some part of the regulator binding motif $j$ overlaps with the 1000 base pairs upstream of the gene $i's$ transcription start site, yet other conditions might be equally applied (such as whether the regulator is in an exon). 
+
+# Discriminating different regulators based $\omega$
+
+
+Recall that each transcription factor complex acts on it's regulator within a subset of the genome. If each gene contained only one regulatorw, then in principle we could perfectly reverse engineer which regulator underlies a given activated gene set: a gene set could contain only one regulator's motif. But there is a "many to many" (not a functional) relationship between the set of genes to the set of motifs, so we can discuss the dissimilarity, distance or divergence between the distributions of distinct regulators $j,j'$, i.e. different columns of $\textbf{R}$, as $D(m_{\cdot j}, m_{\cdot j'})$ for some definition of $D$. The distance between any two regulators dictates if they are more or less discriminable. If $t_{\omega j}$ denotes the "sub-column" $m_{\cdot j}$ identified by the observed gene set $\omega$, then $D(m_{\omega j}, m_{\omega j'})=D_{jj'}$ relates the discriminability of different regulators and is a set of $\binom{n_m}{2}$ random variables for each pair of regulators (or $\textbf{D}$ is a random distance matrix). This in turn determines the correlations between the regulator-specific p-values discussed in the introduction. In case of high correlation, the specificity of inference is necessarily weaker.
+
+cor(null_sim[[100]])  %>% image
+cor(null_sim[[100]])  %>% hist
+
+
+<!-- ![Example of one P-value distribution over different regulators, given $\omega$ ](tmp.pdf){width=65%} -->
+
+<!-- Recall that $\textbf{R} = (t_{ij}) = (k \times p_{ij})$. We then use $p_{i|j}, p_{j|i}$ to denote the conditional distribution over all genes of given regulator $j$, and the conditional distribution of over all regulators of a given gene $i$. Correspondingly, $p_{\cdot j}$ $p_{i \cdot}$ are marginal distributions akin to the (unnormalized, integer-valued) $t_{\cdot j}$ $t_{i \cdot}$. -->
+
+<!-- <!-- Modeling choices about which information $\textbf{R}$ is important. Can we binarize, or collumn normalize etc. --> 
+
+<!-- # Sources of uncertainty -->
+
+<!-- Ambiguity in the forward model (ill-posed because many to many relationship). -->
+
+
+<!-- # On Telis -->
+
+<!-- Our approach is not dissimilar to Telis. They use the mean, we use the mean x n (i.e. the sum). They assume the test statistic is Gaussian, and test its mean. We relax this assumption. -->
+
+<!-- Like Telis, our sample space is conditioned on $m,n$. -->
+
+<!-- # More comments -->
+
+
+<!-- "It could be argued that the most appropriate reference population for analysis is the set of genes found to be expressed in the experimental samples, rather than the entire population of transcripts assayed by the microarray." By reference population he means our $m$. -->
+
+<!-- "Binary (present/not) data are analyzed in a standard binomial test, with p-values derived from the probability of observing St or more positive promoters in a sample of D Bernoulli trials, each of which has a probability of positive outcome equal to the prevalence of TFBM t in the sampling frame as a whole" -->
+
+<!-- "It has been shown that by calculating the Pearson correlation between genes, one can identify (by high correlation values, i.e. > 0.9) genes that share a common regulation mechanism such as being induced/repressed by the same transcription factors" NOT STEVE -->
+
+
+<!-- # ASIDE ON TELIS -->
+
+<!-- In conventional statistical analyses such as the t-test, errors in variables -->
+<!-- lead to inaccurate estimates of the true sampling variability of TFBM -->
+<!-- prevalence in the population of all promoters (Miller, 1986). This undermines -->
+<!-- the accuracy of p-values testing differential representation because the -->
+<!-- standard error of that difference is estimated as a function of the inferred -->
+<!-- population sampling variance (Miller, 1986). However, a single-sample z-test -->
+<!-- does not require any sample-based inferences about TFBM variability because -->
+<!-- that parameter is already known at the population level (i.e. the mean and -->
+<!-- standard deviation of the number of TFBMs in each promoter is pre-compiled for -->
+<!-- all genes assayed by a given microarray). As a result, a population-based -->
+<!-- approach could potentially detect perturbations in TFBM prevalence with -->
+<!-- greater accuracy than conventional sample-based approaches such as the t-test. -->
+
+<!-- the incidence of TFBMs in promoters for all genes in a genome and stores the -->
+<!-- resulting ‘population prevalence matrix’ in the TELiS database. -->
+
+<!-- # Questions -->
+<!-- - Can we discriminate different TFs: dependence between tf-specific statistics/tests? -->
+<!-- - -->
+
+
+<!-- FROM TELIS PAPER: -->
+<!-- At the most immediate level, it should be possible to identify the specific -->
+<!-- transcription factors mediating observed changes in gene expression based on -->
+<!-- the prevalence of their characteristic TFBMs in the promoters of co-regulated -->
+<!-- genes. -->
+
+
+<!-- We focus on the distinct problem of surveying known TFBMs to identify the specific factors driving observed changes in gene expression. -->
+
+<!-- Reverse inference of transcription factor activity. -->
+
+
+<!-- Most genes are regulated through the coordinated actions of multiple -->
+<!-- transcription factors, so the presence of a single TFBM in a gene’s promoter -->
+<!-- does not guarantee that it will be expressed even if its cognate transcription -->
+<!-- factor is activated (Mitchell and Tjian, 1989; Wagner, 1999; Carey and Smale, -->
+<!-- 2000; Holmes and Bruno, 2000; Chiang et al., 2001). -->
+
+<!-- Conversely, the absence of a TFBM for a given factor does not ensure the -->
+<!-- absence of regulation because many transcriptional dynamics are mediated -->
+<!-- indirectly by secondary waves of transcription factor activity (e.g. factor A -->
+<!-- induces the expression of factor B, and factor B subsequently activates -->
+<!-- promoters bearing no consensus binding site for factor A). -->
+
+<!-- This problem is compounded by the fact that current analyses can severely -->
+<!-- underestimate the number of genes showing true differential expression (Cole -->
+<!-- et al., 2003). All these dynamics effectively contaminate the group of -->
+<!-- ‘unregulated control’ promoters with genes that should actually be assigned to -->
+<!-- the ‘differentially expressed’ subset, and vice versa. Such -->
+<!-- cross-contamination is known as the ‘errors in variables’ problem in the -->
+<!-- statistical literature, and it can profoundly degrade analytic accuracy -->
+<!-- (Miller, 1986). -->
+
+<!-- accurate ‘reverse inference’ of transcription factor activity based on microarray differential expression data. -->
+

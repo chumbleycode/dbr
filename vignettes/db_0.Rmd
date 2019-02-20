@@ -1,0 +1,56 @@
+---
+title: "Vignette Title"
+author: "Vignette Author"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+  
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = TRUE)
+knitr::opts_knit$set(root.dir = "../")
+```
+
+
+
+```{r, warning=F, message=F}
+
+########################################################
+# LOAD PACKAGES
+########################################################
+
+library(tidyverse)
+library(data.table)
+library(broom)
+library(matrixStats)
+library(Biobase)
+library(limma)
+library(GEOquery)
+
+```
+
+```{r}
+
+# DIFFERENTIAL MOTIF BINDING
+library(dbr)
+
+########################################################
+# INSPECT TFBM MATRICES (SOMETIMES CALLED "R"egulation matrices)
+########################################################
+
+# THE FOLLOWING TFBM MATRICES ARE CREATED LIKE SO:
+# make_tfbm_matrix("utr", make_the_matrix = T)
+
+load_tfbm_matrix("utr1")[1:5,1:10] # the gene x motif binding "R"egulation matrix 
+
+# SIMILARLY
+load_tfbm_matrix("exonic1")        # the gene x motif binding "R"egulation matrix 
+load_tfbm_matrix("exonic1_utr1")    # the gene x motif binding "R"egulation matrix 
+
+```
