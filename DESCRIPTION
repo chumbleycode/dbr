@@ -15,10 +15,6 @@ Depends: R (>= 2.10)
 VignetteBuilder: knitr
 Suggests: 
     rmarkdown,
-    Biobase,
-    GEOquery,
-    limma,
-    edgeR,
     testthat
 URL: https://github.com/chumbleycode/dbr
 BugReports: https://github.com/chumbleycode/dbr/issues
