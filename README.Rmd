@@ -25,12 +25,30 @@ You can install dbr with:
 
 ``` r
 install.packages("devtools")
-devtools::install_github("chumbleycode/play")
+devtools::install_github("chumbleycode/dbr")
 ```
 
 ## Example
 
 This is a basic example which shows you how to solve a common problem:
+
+# The Bioconductor pkgs can be installed with:
+
+```r
+
+install.packages("BiocManager")
+BiocManager::install("Biobase", version = "3.8")
+BiocManager::install("limma", version = "3.8")
+BiocManager::install("GEOquery", version = "3.8")
+```
+# the CRAN pkgs can be installed thus:
+
+```r
+install.packages(tidyverse)
+install.packages(broom)
+install.packages(data.table)
+install.packages(matrixStats)
+```
 
 ```r
 
