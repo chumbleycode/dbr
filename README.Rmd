@@ -31,7 +31,7 @@ devtools::install_github("chumbleycode/dbr")
 ## Usage
 
 
-# The Bioconductor pkgs can be installed with:
+# Bioconductor pkgs can be installed with:
 
 ```r
 
@@ -40,7 +40,8 @@ BiocManager::install("Biobase", version = "3.8")
 BiocManager::install("limma", version = "3.8")
 BiocManager::install("GEOquery", version = "3.8")
 ```
-# the CRAN pkgs can be installed thus:
+
+# CRAN pkgs can be installed thus:
 
 ```r
 install.packages(tidyverse)
@@ -142,19 +143,3 @@ ttT %>%
 
 
 ``` 
-
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
-
-```{r cars}
-summary(cars)
-```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date.
-
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub!

@@ -66,6 +66,7 @@ make_the_matrices = function(){
   # SAVE
   ########################################################
   usethis::use_data(utr1, exonic1, exonic1_utr1)
+  usethis::use_data(utr1, exonic1, exonic1_utr1, internal = TRUE)
 
   ########################################################
   # RETURN
