@@ -2,7 +2,7 @@
 % Please edit documentation in R/utility_tfbm.R
 \name{get_tfbm_p_vals}
 \alias{get_tfbm_p_vals}
-\title{Title}
+\title{get_tfbm_p_vals}
 \usage{
 get_tfbm_p_vals(rhs, of_in = of_in, which_matrix = "utr", dat,
   n_sim = 10000)
@@ -22,5 +22,5 @@ get_tfbm_p_vals(rhs, of_in = of_in, which_matrix = "utr", dat,
 blah
 }
 \description{
-maaaaa
+Used to create a pipeline around infer_db
 }

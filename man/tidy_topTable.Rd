@@ -2,7 +2,7 @@
 % Please edit documentation in R/utility_tfbm.R
 \name{tidy_topTable}
 \alias{tidy_topTable}
-\title{Title}
+\title{tidy_topTable}
 \usage{
 tidy_topTable(x, of_in, ...)
 }
@@ -14,8 +14,11 @@ tidy_topTable(x, of_in, ...)
 \item{...}{any other argument to toptable}
 }
 \value{
-blah
+a reformatted version of topTable
 }
 \description{
-Title
+This simply reformats topTable's output
+}
+\examples{
+
 }
