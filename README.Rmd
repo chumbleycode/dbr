@@ -12,12 +12,15 @@ knitr::opts_chunk$set(
   out.width = "100%"
 )
 ```
-# dbr
+
+# Differential Binding (dbr)
 
 <!-- [![Travis build status](https://travis-ci.org/chumbleycode/dbr.svg?branch=master)](https://travis-ci.org/chumbleycode/dbr) -->
 <!-- [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/chumbleycode/dbr?branch=master&svg=true)](https://ci.appveyor.com/project/chumbleycode/dbr) -->
 
-The goal of dbr is to ...
+The goal of dbr is to implicate some gene regulator as the upstream cause of differential RNA expression between differerent treatment groups. Colloquially, whether there is "differential binding" (DB) of the regulator over treatments. In practice, dbr asks whether the pattern of differential RNA expression over genes reflects (the binding-site availability of) some upstream regulator. Binding-site availability or "enrichment" just refers to the total count of binding sites found in the DNA of each gene, which is in turn derived from external genomic DNA. 
+
+The package is in development and is likely to change. It currently reimplements the important TeLiS method of Cole et al, which used a gene-set approach to infer DB. Our reimplementation helpfully encorporates the most up-to-date motif binding data. Additionally, our package provides new functionality that eschews the need to heuristically define a gene set, i.e. a set that is categorically "differentially expressed", before proceeding to DB analysis. Instead we simply regress gene-specific DE estimates on gene-specific binding-site counts over the entire relevant genome (the set of genes with at least one binding motif for at least one regulator). For computational convenience our regression approach currently avoids full multilevel modeling. 
 
 ## Installation
 
@@ -27,42 +30,25 @@ You can install dbr with:
 install.packages("devtools")
 devtools::install_github("chumbleycode/dbr")
 ```
-
  
-## This is a basic example which shows you how to solve a common problem.
+## A simple example.
 
-First install the relevant packages
+Here we infer DB from the data published by Cole et al. The question is whether a regulatory transcription factor is implicated in differential RNA expression following early-life stress exposure (child soldier or not). 
 
+DB analysis has two steps. First, estimate differential RNA expression across exposure groups. Here we use a linear model: the exposure must be a *single* column of "design" matrix X (dbr cannot currently handle treatments defined across multiple collumns, e.g. factors with many levels). Second, we infer dependence of this estimate (over genes) on the binding-site count.
 
-```r
-# Bioconductor pkgs can be installed with:
-install.packages("BiocManager")
-BiocManager::install("Biobase", version = "3.8")
-BiocManager::install("limma", version = "3.8")
-BiocManager::install("GEOquery", version = "3.8")
-
-# CRAN pkgs can be installed thus:
-install.packages(tidyverse)
-install.packages(broom)
-install.packages(data.table)
-install.packages(matrixStats)
-```
-
-Then do differential expression and binding analysis. The latter asks whether variation in differential RNA expression over genes is related to variation in the binding site density of a particular transcription factor.
+#### Estimate DE
 
 ```r
-
-# LOAD PACKAGES
+# Load packages
 library(tidyverse)
 library(limma)
 library(dbr)
 
-########################################################
-# DOWNLOAD OPEN SOURCE DATA THEN SPECIFY GENE-BY-GENE REGRESSION MODEL
-########################################################
-
+# Download open source data then specify gene-by-gene regression model
 dat = GEOquery::getGEO("GSE77164")[[1]]
- 
+
+# Specify whole-genome regression of rna on design
 y <- dat %>% Biobase::exprs()
 X <-
   dat %>%
@@ -70,25 +56,24 @@ X <-
   select(age = `age:ch1`,
          soldier = `childsoldier:ch1`,
          edu = `educationlevel:ch1`)
-X     <- model.matrix(~ soldier + edu + age, data = X)
+X     <- model.matrix(~ soldier + edu + age, data = X) 
 
-########################################################
-# ESTIMATE MODEL USING STANDARD limmma/edgeR PIPELINE
-# BUT STORE AS A TIDY TOP TABLE (tT) WITH A ROW CALLED "gene"
-########################################################
-
-# First, infer differential expression  over some exposure of interest, which must be a *single* column of "design" matrix X (i.e. db is not currently sufficiently general to handle general factor vectors).
-
+# Estimate DE using standard limmma/edger pipeline. 
 of_in <- "soldier1"
 ttT <-
   lmFit(y, X) %>%
   eBayes %>%
   tidy_topTable(of_in = of_in)
+```
 
-# Second, infer differential binding.
-# By regression
+#### Infer DB
 
-# For a single Transcription factor binding motif "AR"
+This step can be achieved either by regression of differential expression on motif site count and/or by providing a gene-set of interest (aka TeLiS).
+
+##### Regression approach
+
+```r
+# REGRESS DE ESTIMATE ON MOTIF SITE COUNT FOR THE TRANSCRIPTION FACTOR "AR"
 ttT %>%
   infer_db(which_tfbms = "AR") %>%
   extract_db
@@ -97,16 +82,17 @@ ttT %>%
   infer_db %>%
   extract_db
 
-# By Telis:
-# Telis requires some heuristic to filter on uncorrected p.value, or logfc (not an inference). this requires that the variable ttt_sub, a scrict subset of the rows of ttt that we have already defined (e.g. the subset whose logfc exceeds some heuristic value.
-# The additional options indicate that we have select our prefered tfbm matrix "which_matrix", tfbm hypothesis set "which_tfbms", and methods (p_npar, p_par, which require tt_sub be specified)
+```
+
+##### Gene-set approach (see Cole et al)
+
+This approach requires some heuristic to select a set of subgenes to categorically label as DE. For example, we can filter on uncorrected p.value, or logfc (not an inference). This subset is identified by the argument ttT_sub to infer_db(). ttT_sub is just a scrict subset of the rows of our universe of genes, given in ttT above (e.g. the subset whose logFC, or uncorrect p value exceeds some heuristic value). The additional options blow indicate that we have select our prefered tfbm matrix "which_matrix", tfbm hypothesis set "which_tfbms", and methods (p_npar, p_par, which require tt_sub be specified).
+
+```r
 ttT %>%
   infer_db(ttT_sub        = filter(ttT, P.Value <= 0.05),
            which_matrix   = exonic1_utr1 ,
            which_tfbms    =  c("ALX3", "ALX4_TBX21", "AR") ,
            n_sim          = 10000) %>%
-  extract_db(methods =  c("p_npar", "p_par"))
-
-
-
+  extract_db(methods =  c("p_npar", "p_par")) 
 ``` 

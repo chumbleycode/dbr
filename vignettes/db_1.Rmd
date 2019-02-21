@@ -1,0 +1,94 @@
+---
+title: "Add health "
+author: "Justin Chumbley"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Add health}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+  
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = TRUE)
+knitr::opts_knit$set(root.dir = "../")
+```
+
+This example requires read access to the Addhealth longleaf.
+
+```{r, warning=F, message=F}
+
+library(tidyverse)
+library(matrixStats)
+library(Biobase)
+library(limma)
+library(GEOquery)
+library(edgeR)
+
+old_na_action <- options('na.action') # model.matrix() FUSSY ABOUT NA
+options(na.action='na.pass')
+
+```
+
+```{r} 
+
+library(dbr)
+########################################################
+# LOAD DATA
+########################################################
+
+# dat = readRDS("/ifs/sec/cpc/addhealth/RNA/share/zurich_subjects/dt.rds") # longleaf
+dat     <- readRDS("/Volumes/Share/wenjia_from_j/addhealth/data/dt.rds") # local
+
+# FILTER OUT UNEXPRESSED GENES
+e_genes <- filterByExpr(exprs(dat))
+e_genes <- names(e_genes[e_genes == TRUE])
+
+# SPECIFY GENE-BY-GENE REGRESSION MODEL
+rhs       <- "male + raceth + Plate + AvgCorrelogram100 + w5eversmoke"
+counts    <- dat[e_genes, ] %>% exprs
+phen      <- dat[e_genes, ] %>% pData
+design    <- model.matrix(as.formula(str_c("~", rhs)), data = phen)
+of_in     <- "w5eversmoke" # scalar parameter of interest: should identify a *single* column of "design"
+
+########################################################
+# ESTIMATE TIDY topTable (limma)
+########################################################
+
+ttT <-
+  voom(counts = counts[, complete.cases(design)],
+     design = design[complete.cases(design), ]) %>% # arrayWeights %>%
+  lmFit %>%
+  eBayes %>%
+  tidy_topTable(of_in = of_in)
+
+ttT %>% 
+  head %>% 
+  knitr::kable()
+
+########################################################
+# INSPECT DB RESULTS
+########################################################
+
+# regression only
+ttT %>%
+  infer_db %>%
+  extract_db %>% 
+  head %>% 
+  knitr::kable()
+# telis and regression
+ttT %>%
+  infer_db(ttT_sub = filter(ttT, P.Value <= 0.05)) %>%
+  extract_db %>% 
+  head %>% 
+  knitr::kable()
+
+########################################################
+# REINSTATE OLD na.action
+########################################################
+options(na.action = old_na_action)
+
+```

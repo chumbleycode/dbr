@@ -1,0 +1,36 @@
+---
+title: "Vignette Title"
+author: "Vignette Author"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+  
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = TRUE)
+knitr::opts_knit$set(root.dir = "../")
+```
+
+There are currently three TFBM matrices: utr1, exonic1, exonic_utr1. Get more info for each via ?utr1, ?exonic1, etc. For the technical reference.
+
+```{r, warning=F, message=F}
+
+library(dbr)
+
+########################################################
+# INSPECT TFBM MATRICES (SOMETIMES CALLED "R"egulation matrices)
+########################################################
+
+# Three different TFs
+
+utr1
+exonic1
+exonic1_utr1
+
+```
