@@ -14,8 +14,10 @@ knitr::opts_chunk$set(
 ```
 
 # Differential Binding (dbr)
+## Shanahan Group at UZH and Levitt TFBM data
 
-[![Travis build status](https://travis-ci.org/chumbleycode/dbr.svg?branch=master)](https://travis-ci.org/chumbleycode/dbr)
+
+<!-- [![Travis build status](https://travis-ci.org/chumbleycode/dbr.svg?branch=master)](https://travis-ci.org/chumbleycode/dbr) -->
 
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/chumbleycode/dbr?branch=master&svg=true)](https://ci.appveyor.com/project/chumbleycode/dbr)
 
