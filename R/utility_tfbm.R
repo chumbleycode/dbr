@@ -76,7 +76,7 @@ infer_db =
 
     # ATTEMPT TO REMOVE UNINFORMATIVE TFBMS. REMOVE ROWS WITH NO VARIATION.
     # COULD ALSO ADDRESS COLINEARITY HERE.
-    R = R[, colSds(R) >= 0.1]
+    R = R[, matrixStats::colSds(R) >= 0.1]
 
     # PERHAPS SUBSET COLS OF R
     # CASE 1: ONLY ONE NON NULL TFBM SPECIFIED BEWARE TYPE CHANGE
@@ -123,7 +123,7 @@ infer_db =
       ########################################################
 
       mu = colMeans(R)
-      se = colSds(R)/sqrt(n_gene)
+      se = matrixStats::colSds(R)/sqrt(n_gene)
       telis$par$p_vals_left_tail  = pnorm(obs, mu, se, lower.tail = T) %>% as.vector %>% `names<-`(names(mu)) # downregulation
       telis$par$p_vals_right_tail = pnorm(obs, mu, se, lower.tail = F) %>% as.vector %>% `names<-`(names(mu)) # upregulation
 
@@ -212,7 +212,7 @@ infer_db =
 
       voom(counts = counts[, complete.cases(design)],
            design = design[complete.cases(design), ]) %>% # arrayWeights %>%
-        lmFit %>%
+        limma::lmFit %>%
         eBayes %>%
         topTable(coef = of_in, n = Inf) %>%
         as_tibble(rownames = "gene") %>%
@@ -334,7 +334,7 @@ get_tfbm_p_vals =
     ttT =
       voom(counts = counts[, complete.cases(design)],
            design = design[complete.cases(design), ]) %>% # arrayWeights %>%
-      lmFit %>%
+      limma::lmFit %>%
       eBayes %>%
       topTable(coef = of_in, n = Inf) %>%
       as_tibble(rownames = "gene")
@@ -421,7 +421,7 @@ extract_db =
   function(x, methods = NULL){
     # x is returned from infer_db()
 
-    print("CHECK THE 2 * below!!!!!")
+    # print("CHECK THE 2 * below!!!!!")
 
     if(!is.null(x$telis)){
       out =

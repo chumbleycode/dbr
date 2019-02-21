@@ -51,20 +51,13 @@ This is a basic example which shows you how to solve a common problem:
 ########################################################
 
 library(tidyverse)
-library(broom)
-library(data.table)
-library(matrixStats)
-library(Biobase)
-library(limma)
-library(GEOquery)
+library(dbr) # DIFFERENTIAL BINDING 
 
-# DIFFERENTIAL MOTIF BINDING
-library(dbr)
 ########################################################
 # DOWNLOAD OPEN SOURCE DATA THEN SPECIFY GENE-BY-GENE REGRESSION MODEL
 ########################################################
 
-dat = getGEO("GSE77164")[[1]]
+dat = GEOquery::getGEO("GSE77164")[[1]]
  
 y <- dat %>% exprs
 X <-
@@ -120,10 +113,10 @@ ttT %>%
 # TELIS AND REGRESSION:
 # A MORE ELABORATE EXAMPLE WITH OPTIONAL PARAMETERS
 ########################################################
-# HEURISTICAL FILTER ON UNCORRECTED P.VALUE, OR logFC, NOT AN INFERENCE
-# OPTIONALLY SELECT TFBM MATRIX "which_matrix"
-# OPTIONALLY SELECT INTERESTING TFBMS "which_tfbms"
-# OPTIONAL SET OF METHODS (p_npar, p_par, which require tT_sub be specified)
+# HEURISTICAL FILTER ON UNCORRECTED P.VALUE, OR LOGFC, NOT AN INFERENCE
+# OPTIONALLY SELECT TFBM MATRIX "WHICH_MATRIX"
+# OPTIONALLY SELECT INTERESTING TFBMS "WHICH_TFBMS"
+# OPTIONAL SET OF METHODS (P_NPAR, P_PAR, WHICH REQUIRE TT_SUB BE SPECIFIED)
 
 # db
 ttT %>%
