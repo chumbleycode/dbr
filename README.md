@@ -17,10 +17,8 @@ install.packages("devtools")
 devtools::install_github("chumbleycode/dbr")
 ```
 
-Example
--------
-
-This is a basic example which shows you how to solve a common problem:
+Usage
+-----
 
 The Bioconductor pkgs can be installed with:
 ============================================
@@ -42,6 +40,9 @@ install.packages(broom)
 install.packages(data.table)
 install.packages(matrixStats)
 ```
+
+This is a basic example which shows you how to solve a common problem:
+======================================================================
 
 ``` r
 
