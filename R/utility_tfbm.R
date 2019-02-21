@@ -1,49 +1,28 @@
 
 ########################################################
-# LOAD MATRIX FROM BIOMART
-########################################################
-
-#' load_tfbm_matrix
-#'
-#' See raw-data file for the code used to make the matrix
-#'
-#' @param which_matrix one of "utr", "exonic", "exonic_utr"
-#'
-#' @return  blah
-#' @export
-#'
-#' @import tidyverse
-#'
-#' @examples
-load_tfbm_matrix =
-  function(which_matrix){
-
-    # browser()
-    x = load(str_c("data/", which_matrix, ".rda"))
-    the_mat = get(x)
-
-  }
-
-########################################################
 # TIDY TOP TABLE OUTPUT
 ########################################################
 
-#' Title
+#' tidy_topTable
+#'
+#' This simply reformats topTable's output
 #'
 #' @param x the output of limma::eBays
 #' @param of_in # string refering to a single collumn of design matrix by name
 #' @param ... any other argument to toptable
 #'
-#' @return  blah
+#' @return a reformatted version of topTable
 #' @export
-#' @import tidyverse
 #'
+#' @importFrom dplyr as_tibble
+#' @importFrom limma topTable
 #' @examples
+#'
 tidy_topTable = function(x, of_in, ...) {
 
   x %>%
-    topTable(coef = of_in, n = Inf, ...) %>%
-    as_tibble(rownames = "gene")
+    limma::topTable(coef = of_in, n = Inf, ...) %>%
+    dplyr::as_tibble(rownames = "gene")
 }
 
 ########################################################
@@ -52,11 +31,11 @@ tidy_topTable = function(x, of_in, ...) {
 
 #' Title
 #'
-#' @param ttT blah
-#' @param ttT_sub blah
-#' @param which_matrix blah
-#' @param which_tfbms blah
-#' @param n_sim blah
+#' @param ttT is a tidy "topTable" object, output from tidy_topTable
+#' @param ttT_sub a subset - of rows - of the above, considered interesting in some way.
+#' @param which_matrix the TFBM matrix: "utr1", "exonic1_utr1", "exonic1"
+#' @param which_tfbms a character vector of interesting binding motifs (cols of which matrix)
+#' @param n_sim the number of samples for the monte carlo inference
 #'
 #' @return blah
 #' @export
@@ -68,15 +47,9 @@ infer_db =
            which_tfbms = NULL,
            n_sim = 10000 ){
 
-    # "ttT" is a tidy "topTable" object
-    # "ttT_sub" is a subset of the above, considered interesting in some way.
-    # "which_matrix" takes one of the values: "utr", "exonic_utr", "exonic"
-    # "which_tfbms" is a character vector of columns of which_matrix (i.e. interesting binding motifs)
-    # "n_sim" is the number of samples for the monte carlo inference
-
     if(is.null(which_matrix)) which_matrix = utr1 # default matrix, if unspecified
 
-    # LOAD THE TFBM MATRIX
+    # LOAD TFBM MATRIX
     R = which_matrix # the gene x motif binding "R"egulation matrix
 
     # ATTEMPT TO REMOVE UNINFORMATIVE TFBMS. REMOVE ROWS WITH NO VARIATION.
@@ -296,9 +269,9 @@ infer_db =
 # A CONVENIENCE FOR CALLING infer_db() REPEATEDLY (SEE compare_model_code.R)
 ########################################################
 
-#' Title
+#' get_tfbm_p_vals
 #'
-#' maaaaa
+#' Used to create a pipeline around infer_db
 #'
 #' @param rhs  blah
 #' @param of_in  blah

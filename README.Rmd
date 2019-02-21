@@ -54,7 +54,8 @@ Then do differential expression and binding analysis. The latter asks whether va
 
 # LOAD PACKAGES
 library(tidyverse)
-library(limma) 
+library(limma)
+library(dbr)
 
 ########################################################
 # DOWNLOAD OPEN SOURCE DATA THEN SPECIFY GENE-BY-GENE REGRESSION MODEL
@@ -87,7 +88,6 @@ ttT <-
 # Second, infer differential binding.
 # By regression
 
-library(dbr)
 # For a single Transcription factor binding motif "AR"
 ttT %>%
   infer_db(which_tfbms = "AR") %>%
