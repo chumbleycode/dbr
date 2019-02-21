@@ -20,20 +20,22 @@ knitr::opts_chunk$set(
 
 The goal of dbr is to implicate some gene regulator as the upstream cause of differential RNA expression between differerent treatment groups. Colloquially, whether there is "differential binding" (DB) of the regulator over treatments. In practice, dbr asks whether the pattern of differential RNA expression over genes reflects (the binding-site availability of) some upstream regulator. Binding-site availability or "enrichment" just refers to the total count of binding sites found in the DNA of each gene, which is in turn derived from external genomic DNA. 
 
-The package is in development and is likely to change. It currently reimplements the important TeLiS method of Cole et al, which used a gene-set approach to infer DB. Our reimplementation helpfully encorporates the most up-to-date motif binding data. Additionally, our package provides new functionality that eschews the need to heuristically define a gene set, i.e. a set that is categorically "differentially expressed", before proceeding to DB analysis. Instead we simply regress gene-specific DE estimates on gene-specific binding-site counts over the entire relevant genome (the set of genes with at least one binding motif for at least one regulator). For computational convenience our regression approach currently avoids full multilevel modeling. 
+The package is in development and is likely to change. It currently reimplements the important TeLiS method of Cole, which used a gene-set approach to infer DB. Our reimplementation helpfully encorporates the most up-to-date motif binding data. Additionally, our package provides new functionality that eschews the need to heuristically define a gene set, i.e. a set that is categorically "differentially expressed", before proceeding to DB analysis. Instead we simply regress gene-specific DE estimates on gene-specific binding-site counts over the entire relevant genome (the set of genes with at least one binding motif for at least one regulator). For computational convenience our regression approach currently avoids full multilevel modeling. 
 
 ## Installation
 
 You can install dbr with:
 
-``` r
+```r
 install.packages("devtools")
 devtools::install_github("chumbleycode/dbr")
 ```
  
+There are currently three TFBM matrices: utr1, exonic1, exonic_utr1. Get more info for each via ?utr1, ?exonic1, etc.
+
 ## A simple example.
 
-Here we infer DB from the data published by Cole et al. The question is whether a regulatory transcription factor is implicated in differential RNA expression following early-life stress exposure (child soldier or not). 
+Here we infer DB from the data published by Cole et al. (2016). The question is whether a regulatory transcription factor is implicated in differential RNA expression following early-life stress exposure (child soldier or not). 
 
 DB analysis has two steps. First, estimate differential RNA expression across exposure groups. Here we use a linear model: the exposure must be a *single* column of "design" matrix X (dbr cannot currently handle treatments defined across multiple collumns, e.g. factors with many levels). Second, we infer dependence of this estimate (over genes) on the binding-site count.
 

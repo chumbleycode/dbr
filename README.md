@@ -19,6 +19,8 @@ install.packages("devtools")
 devtools::install_github("chumbleycode/dbr")
 ```
 
+There are currently three TFBM matrices: utr1, exonic1, exonic\_utr1. Get more info for each via ?utr1, ?exonic1, etc.
+
 A simple example.
 -----------------
 
