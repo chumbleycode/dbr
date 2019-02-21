@@ -59,7 +59,7 @@ tidy_topTable = function(x) {
 #' @examples
 infer_db =
   function(ttT, ttT_sub = NULL,
-           which_matrix = "utr1",
+           which_matrix = NULL,
            which_tfbms = NULL,
            n_sim = 10000 ){
 
@@ -69,9 +69,10 @@ infer_db =
     # "which_tfbms" is a character vector of columns of which_matrix (i.e. interesting binding motifs)
     # "n_sim" is the number of samples for the monte carlo inference
 
-    # browser()
+    if(is.null(which_matrix)) which_matrix = utr1 # default matrix, if unspecified
+
     # LOAD THE TFBM MATRIX
-    R = load_tfbm_matrix(which_matrix) # the gene x motif binding "R"egulation matrix
+    R = which_matrix # the gene x motif binding "R"egulation matrix
 
     # ATTEMPT TO REMOVE UNINFORMATIVE TFBMS. REMOVE ROWS WITH NO VARIATION.
     # COULD ALSO ADDRESS COLINEARITY HERE.
