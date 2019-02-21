@@ -4,7 +4,7 @@
 \alias{infer_db}
 \title{Title}
 \usage{
-infer_db(ttT, ttT_sub = NULL, which_matrix = "utr1",
+infer_db(ttT, ttT_sub = NULL, which_matrix = NULL,
   which_tfbms = NULL, n_sim = 10000)
 }
 \arguments{

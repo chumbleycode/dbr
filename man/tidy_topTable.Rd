@@ -4,10 +4,14 @@
 \alias{tidy_topTable}
 \title{Title}
 \usage{
-tidy_topTable(x)
+tidy_topTable(x, of_in, ...)
 }
 \arguments{
-\item{x}{blah}
+\item{x}{the output of limma::eBays}
+
+\item{of_in}{# string refering to a single collumn of design matrix by name}
+
+\item{...}{any other argument to toptable}
 }
 \value{
 blah

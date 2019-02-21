@@ -28,38 +28,33 @@ install.packages("devtools")
 devtools::install_github("chumbleycode/dbr")
 ```
 
-## Usage
+ 
+## This is a basic example which shows you how to solve a common problem.
 
+First install the relevant packages
 
-# Bioconductor pkgs can be installed with:
 
 ```r
-
+# Bioconductor pkgs can be installed with:
 install.packages("BiocManager")
 BiocManager::install("Biobase", version = "3.8")
 BiocManager::install("limma", version = "3.8")
 BiocManager::install("GEOquery", version = "3.8")
-```
 
 # CRAN pkgs can be installed thus:
-
-```r
 install.packages(tidyverse)
 install.packages(broom)
 install.packages(data.table)
 install.packages(matrixStats)
 ```
 
-# This is a basic example which shows you how to solve a common problem:
+Then do differential expression and binding analysis. The latter asks whether variation in differential RNA expression over genes is related to variation in the binding site density of a particular transcription factor.
 
 ```r
 
-########################################################
 # LOAD PACKAGES
-########################################################
-
 library(tidyverse)
-library(dbr) # DIFFERENTIAL BINDING 
+library(limma) 
 
 ########################################################
 # DOWNLOAD OPEN SOURCE DATA THEN SPECIFY GENE-BY-GENE REGRESSION MODEL
@@ -67,72 +62,51 @@ library(dbr) # DIFFERENTIAL BINDING
 
 dat = GEOquery::getGEO("GSE77164")[[1]]
  
-y <- dat %>% exprs
+y <- dat %>% Biobase::exprs()
 X <-
   dat %>%
-  pData %>%
+  Biobase::pData() %>%
   select(age = `age:ch1`,
          soldier = `childsoldier:ch1`,
          edu = `educationlevel:ch1`)
-X     <- model.matrix(~age + soldier + edu, data = X)
-of_in <- "soldier1"
-# "of_in" = scalar parameter of interest: currently must identify a *single*
-# column of "design", i.e. db is not currently sufficiently general to handle
-# general factor vectors.
+X     <- model.matrix(~ soldier + edu + age, data = X)
 
 ########################################################
 # ESTIMATE MODEL USING STANDARD limmma/edgeR PIPELINE
 # BUT STORE AS A TIDY TOP TABLE (tT) WITH A ROW CALLED "gene"
 ########################################################
 
+# First, infer differential expression  over some exposure of interest, which must be a *single* column of "design" matrix X (i.e. db is not currently sufficiently general to handle general factor vectors).
+
+of_in <- "soldier1"
 ttT <-
   lmFit(y, X) %>%
   eBayes %>%
-  topTable(coef = of_in, n = Inf) %>%
-  tidy_topTable
+  tidy_topTable(of_in = of_in)
 
-########################################################
-# DO DB INFERENCE AND EXTRACT RESULTS.
-# THE FUNCTION "extracter" GIVES A TABLE OF P-VALUES FOR DIFFERENT METHODS:
-# p_uni  = SIMPLE UNIVARIATE REGRESSION OF B ON EACH TFBM
-# p_cov  = MULTPLE REGRESSION OF B ON ALL TFBM's SIMULTANIOUSLY
-# p_tot  = SIMPLE UNIVARIATE OF B ON THE TOTAL NUMBER SITES (NOT SPECIFIC TO ONE TFBM)
-# p_par  = parametric telis, RETURNED  ONLY IF ARGUMENT 'tT_sub' IS GIVEN TO "db"
-# p_npar = nonparametric telis, RETURNED  ONLY IF ARGUMENT 'tT_sub' IS GIVEN TO "db"
-########################################################
+# Second, infer differential binding.
+# By regression
 
-# BECAUSE tT_sub IS NOT SPECIFIED THESE TWO EXAMPLES JUST CALCULATE
-# UNIVARIATE (UNI) AND MULTIPLE (COV) REGRESSIONS OF ON TFBM MATRIX
-# ONLY EXAMINE ONE TFBM: AR_
-# IN THIS CASE ALL THREE REGRESSIONS ARE EQUIVALENT
+library(dbr)
+# For a single Transcription factor binding motif "AR"
 ttT %>%
   infer_db(which_tfbms = "AR") %>%
   extract_db
-
-# THE OTHER EXTREME (ALL TFBMS): BEWARE MULTIPLICITY
+# For all known tfbms: beware multiplicity
 ttT %>%
   infer_db %>%
   extract_db
 
-# NOTE: p_tot IS JUST ONE REGRESSION (OF DIFFERENTIAL EFFECT), THE RESULT IS
-# REPLICATED FOR CONVENIENCE
-
-########################################################
-# TELIS AND REGRESSION:
-# A MORE ELABORATE EXAMPLE WITH OPTIONAL PARAMETERS
-########################################################
-# HEURISTICAL FILTER ON UNCORRECTED P.VALUE, OR LOGFC, NOT AN INFERENCE
-# OPTIONALLY SELECT TFBM MATRIX "WHICH_MATRIX"
-# OPTIONALLY SELECT INTERESTING TFBMS "WHICH_TFBMS"
-# OPTIONAL SET OF METHODS (P_NPAR, P_PAR, WHICH REQUIRE TT_SUB BE SPECIFIED)
-
-# db
+# By Telis:
+# Telis requires some heuristic to filter on uncorrected p.value, or logfc (not an inference). this requires that the variable ttt_sub, a scrict subset of the rows of ttt that we have already defined (e.g. the subset whose logfc exceeds some heuristic value.
+# The additional options indicate that we have select our prefered tfbm matrix "which_matrix", tfbm hypothesis set "which_tfbms", and methods (p_npar, p_par, which require tt_sub be specified)
 ttT %>%
   infer_db(ttT_sub        = filter(ttT, P.Value <= 0.05),
            which_matrix   = exonic1_utr1 ,
            which_tfbms    =  c("ALX3", "ALX4_TBX21", "AR") ,
            n_sim          = 10000) %>%
   extract_db(methods =  c("p_npar", "p_par"))
+
 
 
 ``` 

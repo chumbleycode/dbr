@@ -2,17 +2,18 @@ Package: dbr
 Type: Package
 Title: Differential Binding
 Version: 0.0.0.9000
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Author: Justin Chumbley
+Maintainer: Justin Chumbley <justin.chumbley@pm.me>
+Description: Infer differential transcription factor binding across treatment groups. 
+    Differential binding means that differential gene expression across groups itself depends on the total number - or "enrichment" - of binding sites for a transcription factor.
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
-Imports: broom, tidyverse, stats, graphics, knitr, tidyr, data.table, dplyr, usethis, matrixStats
+Imports: broom, tidyverse, stats, graphics, knitr, tidyr, data.table, dplyr, usethis, matrixStats, limma, Biobase, GEOquery
 Depends: R (>= 2.10)
 VignetteBuilder: knitr
+biocViews:
 Suggests: 
     rmarkdown,
     testthat
