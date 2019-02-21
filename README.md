@@ -3,8 +3,8 @@
 Differential Binding (dbr)
 ==========================
 
-<!-- [![Travis build status](https://travis-ci.org/chumbleycode/dbr.svg?branch=master)](https://travis-ci.org/chumbleycode/dbr) -->
-<!-- [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/chumbleycode/dbr?branch=master&svg=true)](https://ci.appveyor.com/project/chumbleycode/dbr) -->
+[![Travis build status](https://travis-ci.org/chumbleycode/dbr.svg?branch=master)](https://travis-ci.org/chumbleycode/dbr) [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/chumbleycode/dbr?branch=master&svg=true)](https://ci.appveyor.com/project/chumbleycode/dbr)
+
 The goal of dbr is to implicate some gene regulator as the upstream cause of differential RNA expression between differerent treatment groups. Colloquially, whether there is "differential binding" (DB) of the regulator over treatments. In practice, dbr asks whether the pattern of differential RNA expression over genes reflects (the binding-site availability of) some upstream regulator. Binding-site availability or "enrichment" just refers to the total count of binding sites found in the DNA of each gene, which is in turn derived from external genomic DNA.
 
 The package is in development and is likely to change. It currently reimplements the important TeLiS method of Cole et al, which used a gene-set approach to infer DB. Our reimplementation helpfully encorporates the most up-to-date motif binding data. Additionally, our package provides new functionality that eschews the need to heuristically define a gene set, i.e. a set that is categorically "differentially expressed", before proceeding to DB analysis. Instead we simply regress gene-specific DE estimates on gene-specific binding-site counts over the entire relevant genome (the set of genes with at least one binding motif for at least one regulator). For computational convenience our regression approach currently avoids full multilevel modeling.
