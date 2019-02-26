@@ -22,7 +22,7 @@
 #' @importFrom limma voom eBayes
 #' @examples
 get_tfbm_p_vals =
-  function(rhs, of_in = of_in, which_matrix = "utr", dat, n_sim = 10000){
+  function(rhs, of_in = of_in, which_matrix = utr1, dat, n_sim = 10000){
 
     e_genes = edgeR::filterByExpr(Biobase::exprs(dat))
     e_genes = names(e_genes[e_genes == TRUE])
@@ -48,7 +48,7 @@ get_tfbm_p_vals =
     ttT =
       voom(counts = counts[, complete.cases(design)],
            design = design[complete.cases(design), ]) %>% # arrayWeights %>%
-      limma::lmFit %>%
+      limma::lmFit() %>%
       eBayes %>%
       topTable(coef = of_in, n = Inf) %>%
       as_tibble(rownames = "gene")
@@ -59,9 +59,10 @@ get_tfbm_p_vals =
 
     out =
       ttT %>%
-      infer_db(ttT_sub = filter(ttT, P.Value <= 0.05) ,
-         which_matrix = which_matrix,
-         n_sim        = n_sim)
+      infer_db(ttT_sub        = filter(ttT, P.Value <= 0.05),
+               which_matrix   = which_matrix,
+               n_sim          = 10000) %>%
+      extract_db()
 
     ########################################################
     # EXIT FUNCTION

@@ -41,7 +41,7 @@ library(dbr)
 ########################################################
 
 # dat = readRDS("/ifs/sec/cpc/addhealth/RNA/share/zurich_subjects/dt.rds") # longleaf
-dat     <- readRDS("/Volumes/Share/wenjia_from_j/addhealth/data/dt.rds") # local
+dat     <- readRDS("/Volumes/Share/preprocess/data/dt.rds") # local
 
 # FILTER OUT UNEXPRESSED GENES
 e_genes <- filterByExpr(exprs(dat))
