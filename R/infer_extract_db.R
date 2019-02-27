@@ -1,5 +1,5 @@
 
-#' infer_extract_db
+#' inf_ex_db
 #'
 #' A convenience function
 #'
@@ -19,7 +19,7 @@
 #' @importFrom Biobase exprs pData
 #' @importFrom limma voom eBayes
 #' @examples
-infer_extract_db =
+inf_ex_db =
   function(rhs, of_in = of_in, which_matrix = utr1, dat, n_sim = 10000){
 
     # FILTER OUT INADMISSIBLE GENES, DEFINE OUTCOME AND DESIGN
