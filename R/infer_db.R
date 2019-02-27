@@ -102,7 +102,7 @@ infer_db =
     m =
       ttT %>%
       select(B,t,AveExpr,logFC) %>%     # THE VARIOUS OUTCOMES y
-      map(regress,                  #
+      map(regress_db,                  #
           X = select(ttT, colnames(R))) # X = THE RHS OF THE REGRESSIONS
 
     return(out = list(ttT   = ttT,

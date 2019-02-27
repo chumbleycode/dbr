@@ -2,9 +2,9 @@
 
 export(disp)
 export(extract_db)
-export(get_tfbm_p_vals)
 export(infer_db)
-export(regress)
+export(infer_extract_db)
+export(regress_db)
 export(tidy_topTable)
 import(broom)
 import(tidyverse)
