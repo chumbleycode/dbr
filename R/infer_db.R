@@ -3,10 +3,16 @@
 #' The main workhorse for differential binding (db) analysis.
 #'
 #' @param ttT is a tidy "topTable" object, output from tidy_topTable
-#' @param ttT_sub a subset - of rows - of the above, considered interesting in some way.
+#' @param ttT_sub a subset - of rows - of the above, considered interesting in
+#'   some way.
 #' @param which_matrix the TFBM matrix: "utr1", "exonic1_utr1", "exonic1"
-#' @param which_tfbms a character vector of interesting binding motifs (cols of which matrix)
+#' @param which_tfbms a character vector of interesting binding motifs (cols of
+#'   which matrix)
 #' @param n_sim the number of samples for the monte carlo inference
+#' @param explicit_zeros If TRUE, then create explicit zero counts in the tfbm
+#'   matrix for all genes in the sample frame that are not in tfbm database. If
+#'   FALSE, then only genes the set of genes with at least one binding motif for
+#'   at least one regulator.
 #'
 #' @return blah
 #' @export
@@ -16,7 +22,8 @@ infer_db =
   function(ttT, ttT_sub = NULL,
            which_matrix = NULL,
            which_tfbms = NULL,
-           n_sim = 10000 ){
+           n_sim = 10000,
+           explicit_zeros = FALSE){
 
     if(is.null(which_matrix)) which_matrix = utr1 # default matrix, if unspecified
 
@@ -41,8 +48,20 @@ infer_db =
       R = R[rownames(R) %in% ttT$gene, which_tfbms]
     }
 
-    # IS TELIS REQUESTED?
+    # The original base tfbm matrix only includes genes with at least one tfbm for at least one regulator.
+    # Genes not mentioned in the base tfbm matrix implicitly have a count of zero for every tfbm.
+    # The preceding code additionally excludes any genes in the base tfbm matrix but not in the sampling frame (ttT$gene).
+    # The next option introduces explicit zeros to R, for all genes in the sampling frame but with (implicitly) zero tfbm count for any motif.
+    if(explicit_zeros){
+      print("Adding explicit zero counts to the tfbm matrix for genes in sampling frame, but not in tfbm matrix")
+      not_in_R = setdiff(ttT$gene, rownames(R))
+      nR = matrix(0,length(not_in_R), dim(R)[2])
+      rownames(nR) = not_in_R
+      R = rbind(R, nR)
+    }
+
     telis = NULL
+    # IS TELIS REQUESTED (BY MEANS OF EXPLICIT ttT_sub ARGUMENT)?
     if(!is.null(ttT_sub)){
 
       ########################################################
@@ -87,7 +106,7 @@ infer_db =
     }
 
     ########################################################
-    # tidy topTable
+    # Join TFBM data to ttT
     ########################################################
 
     ttT =

@@ -5,18 +5,25 @@
 \title{infer_db}
 \usage{
 infer_db(ttT, ttT_sub = NULL, which_matrix = NULL,
-  which_tfbms = NULL, n_sim = 10000)
+  which_tfbms = NULL, n_sim = 10000, explicit_zeros = TRUE)
 }
 \arguments{
 \item{ttT}{is a tidy "topTable" object, output from tidy_topTable}
 
-\item{ttT_sub}{a subset - of rows - of the above, considered interesting in some way.}
+\item{ttT_sub}{a subset - of rows - of the above, considered interesting in
+some way.}
 
 \item{which_matrix}{the TFBM matrix: "utr1", "exonic1_utr1", "exonic1"}
 
-\item{which_tfbms}{a character vector of interesting binding motifs (cols of which matrix)}
+\item{which_tfbms}{a character vector of interesting binding motifs (cols of
+which matrix)}
 
 \item{n_sim}{the number of samples for the monte carlo inference}
+
+\item{explicit_zeros}{If TRUE, then create explicit zero counts in the tfbm
+matrix for all genes in the sample frame that are not in tfbm database. If
+FALSE, then only genes the set of genes with at least one binding motif for
+at least one regulator.}
 }
 \value{
 blah
