@@ -91,8 +91,7 @@ ttT %>%
   extract_db(methods =  c("p_npar", "p_par")) 
 ```
 
-More interesting TF sets
-------------------------
+##### More interesting TF sets
 
 Recent literature has examined "a pre-specified set of TFs involved in inflammation (NF-kB and AP-1), IFN response (interferon-stimulated response elements; ISRE), SNS activity (CREB, which mediates SNS-induced b-adrenergic signaling), and glucocorticoid signaling (glucocorticoid receptor; GR)." In our nomenclature, "NF-kB" is is identified with NFKB1 or NFKB2. AP-1 is called JUN. ISRE is identified with set of tfs including IRF2, IRF3, IRF4, 5, 7, 8, 9. CREB identified with CREB3 or CREB3L1. GR is called NR3C1. This leaves us with 13 regulators plus one complex CEBPG::CREB3L1.
 
