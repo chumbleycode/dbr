@@ -86,7 +86,7 @@ This approach requires some heuristic to select a set of subgenes to categorical
 ttT %>%
   infer_db(ttT_sub        = filter(ttT, P.Value <= 0.05),
            which_matrix   = exonic1_utr1 ,
-           which_tfbms    =  c("ALX3", "ALX4::TBX21", "AR") ,
+           which_tfbms    =  c("ALX3", "ALX4_TBX21", "AR") ,
            n_sim          = 10000) %>%
   extract_db(methods =  c("p_npar", "p_par")) 
 ```
