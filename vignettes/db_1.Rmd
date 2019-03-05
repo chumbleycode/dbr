@@ -10,17 +10,17 @@ vignette: >
   ---
   
   ```{r setup, include = FALSE}
-knitr::opts_chunk$set(
-collapse = TRUE,
-comment = "#>",
-echo = TRUE)
-knitr::opts_knit$set(root.dir = "../")
-```
-
-This example requires read access to the Addhealth longleaf.
-
-```{r, warning=F, message=F}
-
+  knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = TRUE)
+  knitr::opts_knit$set(root.dir = "../")
+  ```
+  
+  This example requires read access to the Addhealth longleaf.
+  
+  ```{r, warning=F, message=F}
+  
 library(tidyverse)
 library(matrixStats)
 library(Biobase)
@@ -81,22 +81,12 @@ ttT %>%
   head %>% 
   knitr::kable()
 # telis and regression
-(both = 
-    ttT %>%
-    infer_db(ttT_sub = filter(ttT, P.Value <= 0.05)) %>%
-    extract_db %>% 
-    head %>% 
-    knitr::kable())
-
-########################################################
-# COMPARE METHODS
-########################################################
-
-if(0){ 
-  
-  both %>% select(-tfbm) %>% GGally::ggpairs()
-  
-}
+ttT %>%
+  infer_db(ttT_sub = filter(ttT, P.Value <= 0.05)) %>%
+  extract_db %>% 
+  head %>% 
+  knitr::kable() 
+ 
 ########################################################
 # REINSTATE OLD na.action
 ########################################################
