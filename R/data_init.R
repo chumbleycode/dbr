@@ -13,8 +13,8 @@ cleaner = function(x){
   # A FORMATTING FUNCTION, SEE BELOW
   x =
     x %>%
-    unite(tf, tf1, tf2, sep = "_", remove = F) %>%
-    mutate(tf = str_replace_all(tf, "_$", "")) %>%
+    unite(tf, tf1, tf2, sep = "::", remove = F) %>%
+    mutate(tf = str_replace_all(tf, "::$", "")) %>%
     dplyr::count(hgnc, tf) %>%
     spread(tf, n, fill = 0)
 
@@ -35,8 +35,12 @@ cleaner = function(x){
 #' @examples
 make_the_matrices = function(){
 
-  path_to_levitt_biomart = "../../levitt_biomart/tfbs.final.011619" # path to raw tfbm data from biomart
+  path_to_levitt_biomart = "../../../levitt_data/final.030119" # path to raw tfbm data from biomart
   tfbs0  = data.table::fread(path_to_levitt_biomart) %>% as_tibble
+  tfbs0  =
+    tfbs0 %>%
+    dplyr::filter(tfindex != "tfindex") %>%  # remove erroneous rows
+    dplyr::mutate(tf2 = if_else(is.na(tf2), "", tf2))
 
   ########################################################
   # THREE DIFFERENT TYPES OF MATRIX
@@ -65,8 +69,7 @@ make_the_matrices = function(){
   ########################################################
   # SAVE
   ########################################################
-  usethis::use_data(utr1, exonic1, exonic1_utr1)
-  usethis::use_data(utr1, exonic1, exonic1_utr1, internal = TRUE)
+  usethis::use_data(utr1, exonic1, exonic1_utr1) # option: internal = TRUE
 
   ########################################################
   # RETURN

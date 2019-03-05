@@ -85,6 +85,13 @@ Recall that each transcription factor complex acts on it's regulator within a su
 cor(null_sim[[100]])  %>% image
 cor(null_sim[[100]])  %>% hist
 
+# 
+
+Steve: "To characterize these demographic transcriptome variations in terms of inflammation, IFN/Ab activity, and neural/endocrine signaling, we conducted promoter-based bioinformatics analyses of TF-binding motif (TFBM) prevalence for a pre-specified set of TFs involved in inflammation (NF-kB and AP-1), IFN response (interferon-stimulated response elements; ISRE), SNS activity (CREB, which mediates SNS-induced b-adrenergic signaling), and glucocorticoid signaling (glucocorticoid receptor; GR) (26).  Results showed significant demographic variation in indicated activity of each TF (Figure 2B).  All but one varied as a function of four or more demographic parameters."
+
+Justin to brandt: Why dont I see AP-1, etc?
+
+Brandt:    I think you’re looking at this obnoxious nomenclature issue- AP-1 is also called JUN, GR is also called NR3C1. ISRE is a category of tfs including IRF2, IRF3, IRF4, 5, 7, 8, 9. 
 
 <!-- ![Example of one P-value distribution over different regulators, given $\omega$ ](tmp.pdf){width=65%} -->
 

@@ -5,7 +5,7 @@
 \title{infer_db}
 \usage{
 infer_db(ttT, ttT_sub = NULL, which_matrix = NULL,
-  which_tfbms = NULL, n_sim = 10000, explicit_zeros = TRUE)
+  which_tfbms = NULL, n_sim = 10000, explicit_zeros = FALSE)
 }
 \arguments{
 \item{ttT}{is a tidy "topTable" object, output from tidy_topTable}
