@@ -20,7 +20,7 @@
 #' @importFrom limma voom eBayes
 #' @examples
 inf_ex_db =
-  function(rhs, of_in = of_in, which_matrix = utr1, dat, n_sim = 10000){
+  function(rhs, of_in = of_in, which_matrix = utr1, dat, n_sim = 10000, ...){
 
     # FILTER OUT INADMISSIBLE GENES, DEFINE OUTCOME AND DESIGN
     e_genes = edgeR::filterByExpr(Biobase::exprs(dat))
@@ -50,7 +50,8 @@ inf_ex_db =
       ttT %>%
       infer_db(ttT_sub      = filter(ttT, P.Value <= 0.05),
                which_matrix = which_matrix,
-               n_sim        = 10000) %>%
+               n_sim        = 10000,
+               ...) %>%
       extract_db()
 
     return(out = out)
