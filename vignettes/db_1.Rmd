@@ -4,16 +4,16 @@ author: "Justin Chumbley"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Add health}
+%\VignetteIndexEntry{Add health}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
----
+  ---
   
-```{r setup, include = FALSE}
+  ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  echo = TRUE)
+collapse = TRUE,
+comment = "#>",
+echo = TRUE)
 knitr::opts_knit$set(root.dir = "../")
 ```
 
@@ -60,7 +60,7 @@ of_in   <- "w5eversmoke" # scalar parameter of interest: should identify a *sing
 
 ttT <-
   voom(counts = counts[, complete.cases(design)],
-     design = design[complete.cases(design), ]) %>% # arrayWeights %>%
+       design = design[complete.cases(design), ]) %>% # arrayWeights %>%
   lmFit %>%
   eBayes %>%
   tidy_topTable(of_in = of_in)
@@ -81,13 +81,22 @@ ttT %>%
   head %>% 
   knitr::kable()
 # telis and regression
-ttT %>%
-  infer_db(ttT_sub = filter(ttT, P.Value <= 0.05)) %>%
-  extract_db %>% 
-  head %>% 
-  knitr::kable()
+(both = 
+    ttT %>%
+    infer_db(ttT_sub = filter(ttT, P.Value <= 0.05)) %>%
+    extract_db %>% 
+    head %>% 
+    knitr::kable())
 
+########################################################
+# COMPARE METHODS
+########################################################
 
+if(0){ 
+  
+  both %>% select(-tfbm) %>% GGally::ggpairs()
+  
+}
 ########################################################
 # REINSTATE OLD na.action
 ########################################################
