@@ -31,10 +31,23 @@ extract_db =
     # NOTE: p_tot IS JUST ONE REGRESSION (OF DIFFERENTIAL EFFECT), THE RESULT IS
     # REPLICATED FOR CONVENIENCE
 
-    # print("CHECK THE 2 * below!!!!!")
+    # THE BELOW APPEARS SIMPLER, BUT IF NOT ALL PARAMETERS IN THE MULTIPLE REGRESSION ARE IDENTIFIED (NA IN OUTPUT), THEN THE DIMENSION OF p_uni AND p_cov ARE MISMATCHED.
+    # out =
+    #   tibble(tfbm = x$m$B$m_uni$term,
+    #          p_uni  = x$m$B$m_uni$p.value,
+    #          p_cov  = x$m$B$m_cov$p.value,
+    #          p_tot  = x$m$B$m_tot$p.value)
+    out =
+      x$m$B$m_uni %>%
+      select(tfbm = term, p_uni = p.value) %>%
+      left_join(select(x$m$B$m_cov, tfbm = term, p_cov = p.value), by = "tfbm") %>%
+      mutate(p_tot  = x$m$B$m_tot$p.value)
 
+    # print("CHECK THE 2 * below!!!!!")
     if(!is.null(x$telis)){
-      out =
+
+      # ESTIMATE AND APPEND TELIS
+      out_telis =
         x$telis %>%
         unlist %>%
         enframe %>%
@@ -42,19 +55,14 @@ extract_db =
         unite("method", c("method", "side")) %>%
         spread(method, value) %>%
         mutate(p_par  = 2 * pmin(par_p_vals_left_tail, par_p_vals_right_tail),
-               p_npar = 2 * pmin(npar_p_vals_left_tail, npar_p_vals_right_tail),
-               p_uni  = x$m$B$m_uni$p.value,
-               p_cov  = x$m$B$m_cov$p.value,
-               p_tot  = x$m$B$m_tot$p.value)
-
-    } else {
+               p_npar = 2 * pmin(npar_p_vals_left_tail, npar_p_vals_right_tail))
 
       out =
-        tibble(tfbm = x$m$B$m_uni$term,
-               p_uni  = x$m$B$m_uni$p.value,
-               p_cov  = x$m$B$m_cov$p.value,
-               p_tot  = x$m$B$m_tot$p.value)
+        out %>%
+        left_join(out_telis, by = "tfbm")
+
     }
+
 
     if(!is.null(methods)) out = out %>% select(tfbm, methods) # possibly subset
     return(out = out)

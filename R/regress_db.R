@@ -31,11 +31,11 @@ regress_db =
       mutate(term = names(X))
     out$m_cov =
       lm(y ~ ., data = X) %>%
-      tidy %>%
+      broom::tidy() %>%
       filter(term != "(Intercept)") # all together
     out$m_tot =
       lm(y ~ rowSums(X)) %>%
-      tidy %>%
+      broom::tidy() %>%
       filter(term != "(Intercept)") # total number of sites
 
     return(out = out)

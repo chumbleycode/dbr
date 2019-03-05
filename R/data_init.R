@@ -13,8 +13,8 @@ cleaner = function(x){
   # A FORMATTING FUNCTION, SEE BELOW
   x =
     x %>%
-    unite(tf, tf1, tf2, sep = "::", remove = F) %>%
-    mutate(tf = str_replace_all(tf, "::$", "")) %>%
+    unite(tf, tf1, tf2, sep = "_", remove = F) %>%
+    mutate(tf = str_replace_all(tf, "_$", "")) %>%
     dplyr::count(hgnc, tf) %>%
     spread(tf, n, fill = 0)
 

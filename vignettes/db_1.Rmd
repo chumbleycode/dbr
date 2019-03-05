@@ -48,11 +48,11 @@ e_genes <- filterByExpr(exprs(dat))
 e_genes <- names(e_genes[e_genes == TRUE])
 
 # SPECIFY GENE-BY-GENE REGRESSION MODEL
-rhs       <- "male + raceth + Plate + AvgCorrelogram100 + w5eversmoke"
-counts    <- dat[e_genes, ] %>% exprs
-phen      <- dat[e_genes, ] %>% pData
-design    <- model.matrix(as.formula(str_c("~", rhs)), data = phen)
-of_in     <- "w5eversmoke" # scalar parameter of interest: should identify a *single* column of "design"
+rhs     <- "male + raceth + Plate + AvgCorrelogram100 + w5eversmoke"
+counts  <- dat[e_genes, ] %>% exprs
+phen    <- dat[e_genes, ] %>% pData
+design  <- model.matrix(as.formula(str_c("~", rhs)), data = phen)
+of_in   <- "w5eversmoke" # scalar parameter of interest: should identify a *single* column of "design"
 
 ########################################################
 # ESTIMATE TIDY topTable (limma)
@@ -73,7 +73,8 @@ ttT %>%
 # INSPECT DB RESULTS
 ########################################################
 
-# regression only
+# regression only.
+# Note: NA in multiple regression (p_cov) indicates non-estimability by lm()
 ttT %>%
   infer_db %>%
   extract_db %>% 
