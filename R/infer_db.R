@@ -22,7 +22,7 @@ infer_db =
   function(ttT, ttT_sub = NULL,
            which_matrix = NULL,
            which_tfbms = NULL,
-           n_sim = 10000,
+           n_sim = 100000,
            explicit_zeros = FALSE){
 
     if(is.null(which_matrix)) which_matrix = utr1 # default matrix, if unspecified
