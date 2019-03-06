@@ -2,7 +2,7 @@
 % Please edit documentation in R/infer_db.R
 \name{append_matrix}
 \alias{append_matrix}
-\title{Join TFBM data to ttT}
+\title{append_matrix}
 \usage{
 append_matrix(ttT = ttT, ttT_sub = ttT_sub, R = R)
 }

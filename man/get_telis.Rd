@@ -2,7 +2,7 @@
 % Please edit documentation in R/infer_db.R
 \name{get_telis}
 \alias{get_telis}
-\title{Title}
+\title{get_telis}
 \usage{
 get_telis(R = R, ttT_sub = ttT_sub, n_sim = n_sim)
 }
@@ -17,5 +17,5 @@ get_telis(R = R, ttT_sub = ttT_sub, n_sim = n_sim)
 blah
 }
 \description{
-Title
+get_telis
 }

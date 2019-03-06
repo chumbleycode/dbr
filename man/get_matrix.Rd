@@ -2,7 +2,7 @@
 % Please edit documentation in R/infer_db.R
 \name{get_matrix}
 \alias{get_matrix}
-\title{Unexported function to LOAD AND TIDY TFBM MATRIX}
+\title{get_matrix}
 \usage{
 get_matrix(which_matrix = which_matrix, which_tfbms = which_tfbms,
   explicit_zeros = explicit_zeros)

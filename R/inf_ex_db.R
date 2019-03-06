@@ -43,7 +43,7 @@ inf_ex_db =
            design = design[complete.cases(design), ]) %>% # arrayWeights %>%
       limma::lmFit() %>%
       eBayes %>%
-      topTable(coef = of_in, n = Inf) %>%
+      topTable(coef = of_in, number = Inf) %>%
       as_tibble(rownames = "gene")
 
     # INFER DIFFERENTIAL TFBM
