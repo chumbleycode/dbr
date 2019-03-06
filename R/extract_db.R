@@ -7,6 +7,7 @@
 #'
 #' @param x   blah
 #' @param methods  blah
+#' @param which_outcome in general the outcome variable may be chosen as logFC, B, etc
 #'
 #' @return  blah
 #' @export
@@ -16,7 +17,7 @@
 #'
 #' @examples
 extract_db =
-  function(x, methods = NULL){
+  function(x, which_outcome = "B", methods = NULL){
     # x is returned from infer_db()
 
     ########################################################
@@ -31,19 +32,21 @@ extract_db =
     # NOTE: p_tot IS JUST ONE REGRESSION (OF DIFFERENTIAL EFFECT), THE RESULT IS
     # REPLICATED FOR CONVENIENCE
 
+    outcome = x$m[[which_outcome]]
+
     # THE BELOW APPEARS SIMPLER, BUT IF NOT ALL PARAMETERS IN THE MULTIPLE REGRESSION ARE IDENTIFIED (NA IN OUTPUT), THEN THE DIMENSION OF p_uni AND p_cov ARE MISMATCHED.
     # out =
-    #   tibble(tfbm = x$m$B$m_uni$term,
-    #          p_uni  = x$m$B$m_uni$p.value,
-    #          p_cov  = x$m$B$m_cov$p.value,
-    #          p_tot  = x$m$B$m_tot$p.value)
+    #   tibble(tfbm = outcome$m_uni$term,
+    #          p_uni  = outcome$m_uni$p.value,
+    #          p_cov  = outcome$m_cov$p.value,
+    #          p_tot  = outcome$m_tot$p.value)
     out =
-      x$m$B$m_uni %>%
+      outcome$m_uni %>%
       select(tfbm = term, p_uni = p.value) %>%
-      left_join(select(x$m$B$m_cov, tfbm = term, p_cov = p.value), by = "tfbm") %>%
-      mutate(p_tot  = x$m$B$m_tot$p.value)
+      left_join(select(outcome$m_cov, tfbm = term, p_cov = p.value), by = "tfbm") %>%
+      mutate(p_tot  = outcome$m_tot$p.value)
 
-    # print("CHECK THE 2 * below!!!!!")
+    # print("CHECK THE 2 * below")
     if(!is.null(x$telis)){
 
       # ESTIMATE AND APPEND TELIS
@@ -62,7 +65,6 @@ extract_db =
         left_join(out_telis, by = "tfbm")
 
     }
-
 
     if(!is.null(methods)) out = out %>% select(tfbm, methods) # possibly subset
     return(out = out)

@@ -66,18 +66,18 @@ dat = GEOquery::getGEO("GSE77164")[[1]]
 # Specify whole-genome regression of rna on design
 y <- dat %>% Biobase::exprs()
 X <- dat %>%
-Biobase::pData() %>%
-select(age = `age:ch1`,
-soldier = `childsoldier:ch1`,
-edu = `educationlevel:ch1`)
-X     <- model.matrix(~ soldier + edu + age, data = X) 
+  Biobase::pData() %>%
+  select(age = `age:ch1`,
+         soldier = `childsoldier:ch1`,
+         edu = `educationlevel:ch1`)
+X <- model.matrix(~ soldier + edu + age, data = X) 
 
 # Estimate DE using standard limmma/edger pipeline. 
 of_in <- "soldier1"
 ttT <-
-lmFit(y, X) %>%
-eBayes %>%
-tidy_topTable(of_in = of_in)
+  lmFit(y, X) %>%
+  eBayes %>%
+  tidy_topTable(of_in = of_in)
 ```
 
 #### DB
@@ -99,19 +99,25 @@ ttT %>% append_db(which_matrix = utr1)
 ttT %>% append_db(which_matrix = utr1, explicit_zeros = T)
 
 # regress DE on one motif of interest
-summary(lm(B ~ NR3C1, data = append_db(ttT))) 
+summary(lm(logFC ~ NR3C1, data = append_db(ttT))) 
+summary(lm(B ~ NR3C1, data = append_db(ttT))) # log odds
 summary(lm(B ~ NR3C1, data = append_db(ttT, explicit_zeros = T))) # note: different degrees of freedom
 summary(lm(B ~ NR3C1, data = append_db(ttT, which_matrix = exonic1))) # note: different binding location 
 
-# REGRESS DE ESTIMATE ON MOTIF SITE COUNT FOR THE TRANSCRIPTION FACTOR: BEWARE MULTIPLICITY
+# REGRESS DE ESTIMATE (DEFAULT IS "B" LOG ODDS) ON MOTIF SITE COUNT FOR THE TRANSCRIPTION FACTOR: BEWARE MULTIPLICITY
 ttT %>%
-infer_db(which_tfbms = immune_tfbms) %>%
-extract_db
+  infer_db(which_tfbms = immune_tfbms) %>%
+  extract_db
+
+# With a different outcome logFC:
+ttT %>%
+  infer_db(which_tfbms = immune_tfbms) %>%
+  extract_db(which_outcome = "logFC")
 
 # EXPLORATORY FISHING: BEWARE MULTIPLICITY
 ttT %>%
-infer_db %>%
-extract_db 
+  infer_db %>%
+  extract_db 
 
 ```
 
@@ -121,9 +127,9 @@ This approach requires some heuristic to select a set of subgenes to categorical
 
 ```r
 ttT %>%
-infer_db(ttT_sub        = filter(ttT, P.Value <= 0.05),
-which_matrix   = exonic1_utr1 ,
-which_tfbms    = immune_tfbms,
-explicit_zeros = TRUE) %>%
-extract_db(methods =  c("p_npar", "p_par")) 
+  infer_db(ttT_sub        = filter(ttT, P.Value <= 0.05),
+           which_matrix   = exonic1_utr1 ,
+           which_tfbms    = immune_tfbms,
+           explicit_zeros = TRUE) %>%
+  extract_db(methods =  c("p_npar", "p_par")) 
 ``` 
