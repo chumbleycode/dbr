@@ -32,16 +32,16 @@ You can install dbr with:
 ```r
 install.packages("devtools")
 devtools::install_github("chumbleycode/dbr")
+library(dbr)
 ```
 
 ## Data: a simple example
 
 There are currently three TFBM matrices: utr1, exonic1, exonic_utr1. Get more info for each via ?utr1, ?exonic1, etc.
 
-Motifs of interest may be found in the columns of these matrices. For example, recent literature has examined "a pre-specified set of TFs involved in inflammation (NF-kB and AP-1), IFN response (interferon-stimulated response elements; ISRE), SNS activity (CREB, which mediates SNS-induced b-adrenergic signaling), and glucocorticoid signaling (glucocorticoid receptor; GR)."  In biomart nomenclature, "NF-kB" is is identified with NFKB1 or NFKB2.  AP-1 is called JUN. ISRE is identified with set of tfs including IRF2, IRF3, IRF4, 5, 7, 8, 9. CREB identified with CREB3 or CREB3L1. GR is called NR3C1. This leaves us with 13 regulators plus one complex CEBPG::CREB3L1, as follows.
+Motifs of interest may be found in the columns of these matrices. For example, recent literature has examined "a pre-specified set of TFs involved in inflammation (NF-kB and AP-1), IFN response (interferon-stimulated response elements; ISRE), SNS activity (CREB, which mediates SNS-induced b-adrenergic signaling), and glucocorticoid signaling (glucocorticoid receptor; GR)."  In biomart nomenclature, "NF-kB" is is identified with NFKB1 or NFKB2.  AP-1 is called JUN. ISRE is identified with set of tfs including IRF2, IRF3, IRF4, 5, 7, 8, 9. CREB identified with CREB3 or CREB3L1. GR is called NR3C1. This leaves us with 13 regulators plus one complex CEBPG::CREB3L1 (CEBPG_CREB3L1), as follows.
 
 ```r
-# (immune_tfbms = stringr::str_subset(colnames(utr1), c("NFKB1|NFKB2|JUN|IRF2|IRF3|IRF4|IRF5|IRF7|IRF8|IRF9|CREB3|CREB3L1|NR3C1")))
 immune_tfbms = c("CEBPG_CREB3L1", "CREB3", "CREB3L1", "IRF2", "IRF3", "IRF4", "IRF5", "IRF7", "IRF8", "IRF9", "JUN", "NFKB1", "NFKB2", "NR3C1")
 utr1[, immune_tfbms] # the gene-by-motif matrix for immune motifs of interest
 ```
@@ -59,7 +59,6 @@ We examine DB of some immune regulators amoung people with early-life stress (re
 # Load packages
 library(tidyverse)
 library(limma)
-library(dbr)
 
 # Download open source data then specify gene-by-gene regression model
 dat = GEOquery::getGEO("GSE77164")[[1]]
@@ -89,10 +88,20 @@ Perhaps the simplest differential binding analysis is just a regression of gene-
 
 
 ```r
-# View the tfbm augmented topTable 
-ttT %>% append_db(which_matrix = exonic1)
-summary(lm(B ~ AR, data = append_db(ttT))) 
-summary(lm(B ~ AR, data = append_db(ttT, which_matrix = exonic1))) # same but for 
+# Note the number of genes in the sample frame, the number containing at least 1 DNA motif, and the intersection of these gene-sets.
+length(ttT$gene)
+length(rownames(utr1))
+length(intersect(rownames(utr1), ttT$gene))
+
+# Inspect the tfbm-augmented DE results: note the dimensions
+ttT %>% append_db(which_matrix = utr1) 
+# To include explicit zeros
+ttT %>% append_db(which_matrix = utr1, explicit_zeros = T)
+
+# regress DE on one motif of interest
+summary(lm(B ~ NR3C1, data = append_db(ttT))) 
+summary(lm(B ~ NR3C1, data = append_db(ttT, explicit_zeros = T))) # note: different degrees of freedom
+summary(lm(B ~ NR3C1, data = append_db(ttT, which_matrix = exonic1))) # note: different binding location 
 
 # REGRESS DE ESTIMATE ON MOTIF SITE COUNT FOR THE TRANSCRIPTION FACTOR: BEWARE MULTIPLICITY
 ttT %>%
