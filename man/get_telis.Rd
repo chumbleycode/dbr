@@ -14,7 +14,7 @@ get_telis(R = R, ttT_sub = ttT_sub, n_sim = n_sim)
 \item{n_sim}{blah}
 }
 \value{
-
+blah
 }
 \description{
 Title

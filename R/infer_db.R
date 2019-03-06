@@ -280,7 +280,7 @@ append_matrix <- function(ttT = ttT, ttT_sub = ttT_sub, R = R){
 #' @param ttT_sub bla
 #' @param n_sim blah
 #'
-#' @return
+#' @return blah
 #'
 #' @examples
 get_telis <- function(R = R, ttT_sub = ttT_sub, n_sim = n_sim){
