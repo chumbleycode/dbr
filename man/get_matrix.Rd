@@ -4,10 +4,12 @@
 \alias{get_matrix}
 \title{get_matrix}
 \usage{
-get_matrix(which_matrix = which_matrix, which_tfbms = which_tfbms,
-  explicit_zeros = explicit_zeros)
+get_matrix(ttT = ttT, which_matrix = which_matrix,
+  which_tfbms = which_tfbms, explicit_zeros = explicit_zeros)
 }
 \arguments{
+\item{ttT}{blah}
+
 \item{which_matrix}{blah}
 
 \item{which_tfbms}{blah}

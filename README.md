@@ -73,7 +73,7 @@ ttT <-
 
 #### DB
 
-Perhaps the simplest differential binding analysis is just a regression of gene-wise DE estimates on motif site count
+Perhaps the simplest differential binding analysis is just a regression of gene-wise DE estimates on motif site count.
 
 ##### Regression approach
 

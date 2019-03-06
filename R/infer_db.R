@@ -26,7 +26,7 @@ infer_db =
            n_sim = 100000){
 
     if(is.null(which_matrix)) which_matrix = utr1 # default matrix, if unspecified
-    R   = get_matrix(which_matrix = which_matrix, which_tfbms = which_tfbms, explicit_zeros = explicit_zeros)
+    R   = get_matrix(ttT = ttT, which_matrix = which_matrix, which_tfbms = which_tfbms, explicit_zeros = explicit_zeros)
     ttT = append_matrix(ttT = ttT, ttT_sub = ttT_sub, R = R)
 
     # TELIS
@@ -65,7 +65,7 @@ append_db =
            explicit_zeros = FALSE){
 
     if(is.null(which_matrix)) which_matrix = utr1 # default matrix, if unspecified
-    R   = get_matrix(which_matrix = which_matrix, which_tfbms = which_tfbms, explicit_zeros = explicit_zeros)
+    R   = get_matrix(ttT = ttT, which_matrix = which_matrix, which_tfbms = which_tfbms, explicit_zeros = explicit_zeros)
     ttT = append_matrix(ttT = ttT, ttT_sub = ttT_sub, R = R)
 
     return(ttT = ttT)
@@ -108,11 +108,12 @@ append_matrix <- function(ttT = ttT, ttT_sub = ttT_sub, R = R){
 #' @param which_matrix blah
 #' @param which_tfbms  blah
 #' @param explicit_zeros blah
+#' @param ttT blah
 #'
 #' @return a tidied tfbm matrix
 #'
 #' @examples
-get_matrix <- function(which_matrix = which_matrix, which_tfbms = which_tfbms, explicit_zeros = explicit_zeros){
+get_matrix <- function(ttT = ttT, which_matrix = which_matrix, which_tfbms = which_tfbms, explicit_zeros = explicit_zeros){
 
   # LOAD TFBM MATRIX
   R = which_matrix # the gene x motif binding "R"egulation matrix
@@ -125,15 +126,15 @@ get_matrix <- function(which_matrix = which_matrix, which_tfbms = which_tfbms, e
   # CASE 1: ONLY ONE NON NULL TFBM SPECIFIED BEWARE TYPE CHANGE
   # CASE 2: ANY OTHER NON-NULL, NON-SINGLETON PROPER SUBSET OF COLS OF R
   # CASE 3: EXAMINE ALL TFBMS
-  tfbm_genes_in_frame  = rownames(R) %in% ttT$gene # which tfbm genes are in the sampling frame
+  in_frame  = rownames(R) %in% ttT$gene # which tfbm genes are in the sampling frame
   if((!is.null(which_tfbms)) & (length(which_tfbms) == 1)){
-    Rt  = R[tfbm_genes_in_frame, which_tfbms]
+    Rt  = R[in_frame, which_tfbms]
     R   = matrix(Rt, ncol = 1) %>% `rownames<-`(names(Rt)) %>% `colnames<-`(which_tfbms)
   } else if((!is.null(which_tfbms)) & (length(which_tfbms) >= 2)) {
-    R = R[tfbm_genes_in_frame, which_tfbms]        # restrict R to those genes which could in principle be differentially expressed
+    R = R[in_frame, which_tfbms]        # restrict R to those genes which could in principle be differentially expressed
   } else if(is.null(which_tfbms)) {
     which_tfbms = colnames(R)
-    R = R[tfbm_genes_in_frame, which_tfbms]
+    R = R[in_frame, which_tfbms]
   }
 
   # The original base tfbm matrix only includes genes with at least one tfbm for at least one regulator.
