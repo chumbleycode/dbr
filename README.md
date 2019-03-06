@@ -11,7 +11,7 @@ Shanahan Group at UZH and Levitt TFBM data
 
 The goal of dbr is to implicate some gene regulator as the upstream cause of differential RNA expression between differerent treatment groups. Colloquially, whether there is "differential binding" (DB) of the regulator over treatments. In practice, dbr asks whether the pattern of differential RNA expression over genes reflects (the binding-site availability of) some upstream regulator. Binding-site availability or "enrichment" just refers to the total count of binding sites found in the DNA of each gene, which is in turn derived from external genomic DNA.
 
-The package is in development and is likely to change. It currently reimplements the important TeLiS method of Cole, which used a gene-set approach to infer DB. Our reimplementation incorporates the most up-to-date motif binding data. Additionally, our package provides new functionality that eschews the need to heuristically define a gene set, i.e. a set that is categorically "differentially expressed", before proceeding to DB analysis. Instead we simply regress gene-specific DE estimates on gene-specific binding-site counts over the entire relevant genome (the set of genes with at least one binding motif for at least one regulator). For computational convenience our regression approach currently avoids full multilevel modeling.
+The package is in development and is likely to change. It currently reimplements the important TeLiS method of Cole et. al. (2005), which used a gene-set approach to infer DB. Our reimplementation incorporates the most up-to-date motif binding data. Additionally, our package offers a non-parametric version of telis and provides simple new functionality that eschews the need to heuristically define a gene set altogether, i.e. a set that is categorically "differentially expressed", before proceeding to DB analysis. Instead we simply regress gene-specific DE estimates on gene-specific binding-site counts over the entire relevant genome (the set of genes with at least one binding motif for at least one regulator). For computational convenience our regression approach currently avoids full multilevel modeling.
 
 Installation
 ------------
@@ -28,19 +28,21 @@ Data: a simple example
 
 There are currently three TFBM matrices: utr1, exonic1, exonic\_utr1. Get more info for each via ?utr1, ?exonic1, etc.
 
-Motifs of interest may be found in the columns of these matrices. For example, recent literature has examined "a pre-specified set of TFs involved in inflammation (NF-kB and AP-1), IFN response (interferon-stimulated response elements; ISRE), SNS activity (CREB, which mediates SNS-induced b-adrenergic signaling), and glucocorticoid signaling (glucocorticoid receptor; GR)." In biomart nomenclature, "NF-kB" is is identified with NFKB1 or NFKB2. AP-1 is called JUN. ISRE is identified with set of tfs including IRF2, IRF3, IRF4, 5, 7, 8, 9. CREB identified with CREB3 or CREB3L1. GR is called NR3C1. This leaves us with 13 regulators plus one complex CEBPG::CREB3L1.
+Motifs of interest may be found in the columns of these matrices. For example, recent literature has examined "a pre-specified set of TFs involved in inflammation (NF-kB and AP-1), IFN response (interferon-stimulated response elements; ISRE), SNS activity (CREB, which mediates SNS-induced b-adrenergic signaling), and glucocorticoid signaling (glucocorticoid receptor; GR)." In biomart nomenclature, "NF-kB" is is identified with NFKB1 or NFKB2. AP-1 is called JUN. ISRE is identified with set of tfs including IRF2, IRF3, IRF4, 5, 7, 8, 9. CREB identified with CREB3 or CREB3L1. GR is called NR3C1. This leaves us with 13 regulators plus one complex CEBPG::CREB3L1, as follows.
 
 ``` r
-(immune_tfbms = stringr::str_subset(colnames(utr1), c("NFKB1|NFKB2|JUN|IRF2|IRF3|IRF4|IRF5|IRF7|IRF8|IRF9|CREB3|CREB3L1|NR3C1")))
-utr1[, immune_tfbms]
+# (immune_tfbms = stringr::str_subset(colnames(utr1), c("NFKB1|NFKB2|JUN|IRF2|IRF3|IRF4|IRF5|IRF7|IRF8|IRF9|CREB3|CREB3L1|NR3C1")))
+immune_tfbms = c("CEBPG_CREB3L1", "CREB3", "CREB3L1", "IRF2", "IRF3", "IRF4", "IRF5", "IRF7", "IRF8", "IRF9", "JUN", "NFKB1", "NFKB2", "NR3C1")
+utr1[, immune_tfbms] # the gene-by-motif matrix for immune motifs of interest
 ```
 
 Analysis: a simple example.
 ---------------------------
 
-Here we infer DB from the data published by Cole et al. (2016). The question is whether a regulatory transcription factor is implicated in differential RNA expression following early-life stress exposure (child soldier or not).
+We examine DB of some immune regulators amoung people with early-life stress (relative to unstressed) using data from Cole et al. (2016). Such analyses generally have two steps.
 
-DB analysis has two steps. First, estimate differential RNA expression across exposure groups. Here we use a linear model: the exposure must be a *single* column of "design" matrix X (dbr cannot currently handle treatments defined across multiple collumns, e.g. factors with many levels). Second, we infer dependence of this estimate (over genes) on the binding-site count.
+1.  Differential expression (DE): Estimate differential RNA expression across exposure groups. Here we use a linear model: the exposure must be a *single* column of "design" matrix X (dbr cannot currently handle treatments defined across multiple collumns, e.g. factors with many levels).
+2.  Differential binding (DB): Infer dependence of this estimate (over genes) on the binding-site count.
 
 #### DE
 
@@ -55,8 +57,7 @@ dat = GEOquery::getGEO("GSE77164")[[1]]
 
 # Specify whole-genome regression of rna on design
 y <- dat %>% Biobase::exprs()
-X <-
-dat %>%
+X <- dat %>%
 Biobase::pData() %>%
 select(age = `age:ch1`,
 soldier = `childsoldier:ch1`,
@@ -69,7 +70,6 @@ ttT <-
 lmFit(y, X) %>%
 eBayes %>%
 tidy_topTable(of_in = of_in)
-
 ```
 
 #### DB
