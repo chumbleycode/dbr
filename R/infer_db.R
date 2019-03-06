@@ -22,102 +22,18 @@ infer_db =
   function(ttT, ttT_sub = NULL,
            which_matrix = NULL,
            which_tfbms = NULL,
-           n_sim = 100000,
-           explicit_zeros = FALSE){
+           explicit_zeros = FALSE,
+           n_sim = 100000){
 
     if(is.null(which_matrix)) which_matrix = utr1 # default matrix, if unspecified
+    R   = get_matrix(which_matrix = which_matrix, which_tfbms = which_tfbms, explicit_zeros = explicit_zeros)
+    ttT = append_matrix(ttT = ttT, ttT_sub = ttT_sub, R = R)
 
-    # LOAD TFBM MATRIX
-    R = which_matrix # the gene x motif binding "R"egulation matrix
-
-    # ATTEMPT TO REMOVE UNINFORMATIVE TFBMS. REMOVE ROWS WITH NO VARIATION.
-    # COULD ALSO ADDRESS COLINEARITY HERE.
-    R = R[, matrixStats::colSds(R) >= 0.1]
-
-    # PERHAPS SUBSET COLS OF R
-    # CASE 1: ONLY ONE NON NULL TFBM SPECIFIED BEWARE TYPE CHANGE
-    # CASE 2: ANY OTHER NON-NULL, NON-SINGLETON PROPER SUBSET OF COLS OF R
-    # CASE 3: EXAMINE ALL TFBMS
-    if((!is.null(which_tfbms)) & (length(which_tfbms) == 1)){
-      Rt  = R[rownames(R) %in% ttT$gene, which_tfbms]
-      R   = matrix(Rt, ncol = 1) %>% `rownames<-`(names(Rt)) %>% `colnames<-`(which_tfbms)
-    } else if((!is.null(which_tfbms)) & (length(which_tfbms) >= 2)) {
-      R = R[rownames(R) %in% ttT$gene, which_tfbms]        # restrict R to those genes which could in principle be differentially expressed
-    } else if(is.null(which_tfbms)) {
-      which_tfbms = colnames(R)
-      R = R[rownames(R) %in% ttT$gene, which_tfbms]
-    }
-
-    # The original base tfbm matrix only includes genes with at least one tfbm for at least one regulator.
-    # Genes not mentioned in the base tfbm matrix implicitly have a count of zero for every tfbm.
-    # The preceding code additionally excludes any genes in the base tfbm matrix but not in the sampling frame (ttT$gene).
-    # The next option introduces explicit zeros to R, for all genes in the sampling frame but with (implicitly) zero tfbm count for any motif.
-    if(explicit_zeros){
-      print("Adding explicit zero counts to the tfbm matrix for genes in sampling frame, but not in tfbm matrix")
-      not_in_R = setdiff(ttT$gene, rownames(R))
-      nR = matrix(0,length(not_in_R), dim(R)[2])
-      rownames(nR) = not_in_R
-      R = rbind(R, nR)
-    }
-
+    # TELIS
     telis = NULL
-    # IS TELIS REQUESTED (BY MEANS OF EXPLICIT ttT_sub ARGUMENT)?
-    if(!is.null(ttT_sub)){
+    if(!is.null(ttT_sub)) telis <- get_telis(R = R, ttT_sub = ttT_sub, n_sim = n_sim) # possibly update telis = NULL
 
-      ########################################################
-      # TELIS p values
-      ########################################################
-
-      ########################################################
-      # A NEW NON-PARAMETRIC SCHEME:
-      # NON PARAMETRIC MONTE CARLO NULL DISTRIBUTION
-      ########################################################
-
-      responsive_lgl = rownames(R) %in% ttT_sub$gene # df gene set
-      (n_gene = sum(responsive_lgl))                 # size of focal gene set within R
-
-      sims = rerun(n_sim, sample(responsive_lgl))
-      sims = matrix(unlist(sims), nrow = n_sim, byrow = T)
-      sims = unique(sims) # for purists: this ensures that we only sample from the set of all possible permutations, WITH replacement
-
-      S    = (sims / n_gene) %*% R              # mean motif-count-per-gene statistic is a linear function of omega
-      obs  = (t(responsive_lgl / n_gene) %*% R) # corresponding motif statistics
-
-      telis$npar$p_vals_left_tail  = map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y >= .x)) # down regulation?
-      telis$npar$p_vals_right_tail = map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y <= .x)) # up regulation?
-
-      ########################################################
-      # STEVE'S ORIGINAL PARAMETRIC IID APPROXIMATION
-      ########################################################
-
-      mu = colMeans(R)
-      se = matrixStats::colSds(R)/sqrt(n_gene)
-      telis$par$p_vals_left_tail  = pnorm(obs, mu, se, lower.tail = T) %>% as.vector %>% `names<-`(names(mu)) # downregulation
-      telis$par$p_vals_right_tail = pnorm(obs, mu, se, lower.tail = F) %>% as.vector %>% `names<-`(names(mu)) # upregulation
-
-      ########################################################
-      # SOME REPORTING
-      ########################################################
-
-      print(str_c("dimensions of TFBM matrix R  :  ", dim(R)[1], " x ", dim(R)[2]))
-      print(str_c("n genes within R             : ",  length(responsive_lgl)))
-      print(str_c("n interesting genes within R : ",  sum(responsive_lgl)))
-
-    }
-
-    ########################################################
-    # Join TFBM data to ttT
-    ########################################################
-
-    ttT =
-      as_tibble(R, rownames = "gene") %>%
-      left_join(ttT, by = "gene") %>%
-      mutate(a_priori = gene %in% ttT_sub$gene) # WHICH WERE "INTERESTING", POSSIBLY NULL
-
-    ########################################################
-    # GENE POPULATION (OR WHOLE GENOME) SECOND LEVEL REGRESSIONS
-    ########################################################
-
+    # REGRESSIONS
     m =
       ttT %>%
       select(B,t,AveExpr,logFC) %>%     # THE VARIOUS OUTCOMES y
@@ -128,9 +44,8 @@ infer_db =
                       telis = telis,
                       m     = m))
 
-
     #######################################################
-    # OTHER SPECULATIONS
+    # OTHER VERY ROUGH CODE: SPECULATIONS
     #######################################################
 
     if(0){
@@ -255,3 +170,160 @@ infer_db =
   }
 
 
+#' append_db
+#'
+#' @param ttT see infer_db
+#' @param ttT_sub  see infer_db
+#' @param which_matrix see infer_db
+#' @param which_tfbms see infer_db
+#' @param explicit_zeros see infer_db
+#'
+#' @return
+#' @export
+#'
+#' @examples
+append_db =
+  function(ttT, ttT_sub = NULL,
+           which_matrix = NULL,
+           which_tfbms = NULL,
+           explicit_zeros = FALSE){
+
+    if(is.null(which_matrix)) which_matrix = utr1 # default matrix, if unspecified
+    R   = get_matrix(which_matrix = which_matrix, which_tfbms = which_tfbms, explicit_zeros = explicit_zeros)
+    ttT = append_matrix(ttT = ttT, ttT_sub = ttT_sub, R = R)
+  }
+
+
+
+
+
+
+
+########################################################
+# UTILITY TO BE CALLED ONLY FROM ABOVE (else resolve ...)
+########################################################
+
+#' Unexported function to LOAD AND TIDY TFBM MATRIX
+#'
+#' @param which_matrix blah
+#' @param which_tfbms  blah
+#' @param explicit_zeros blah
+#'
+#' @return a tidied tfbm matrix
+#'
+#' @examples
+get_matrix <- function(which_matrix = which_matrix, which_tfbms = which_tfbms, explicit_zeros = explicit_zeros){
+
+  # LOAD TFBM MATRIX
+  R = which_matrix # the gene x motif binding "R"egulation matrix
+
+  # ATTEMPT TO REMOVE UNINFORMATIVE TFBMS. REMOVE ROWS WITH NO VARIATION.
+  # COULD ALSO ADDRESS COLINEARITY HERE.
+  R = R[, matrixStats::colSds(R) >= 0.1]
+
+  # PERHAPS SUBSET COLS OF R
+  # CASE 1: ONLY ONE NON NULL TFBM SPECIFIED BEWARE TYPE CHANGE
+  # CASE 2: ANY OTHER NON-NULL, NON-SINGLETON PROPER SUBSET OF COLS OF R
+  # CASE 3: EXAMINE ALL TFBMS
+  if((!is.null(which_tfbms)) & (length(which_tfbms) == 1)){
+    Rt  = R[rownames(R) %in% ttT$gene, which_tfbms]
+    R   = matrix(Rt, ncol = 1) %>% `rownames<-`(names(Rt)) %>% `colnames<-`(which_tfbms)
+  } else if((!is.null(which_tfbms)) & (length(which_tfbms) >= 2)) {
+    R = R[rownames(R) %in% ttT$gene, which_tfbms]        # restrict R to those genes which could in principle be differentially expressed
+  } else if(is.null(which_tfbms)) {
+    which_tfbms = colnames(R)
+    R = R[rownames(R) %in% ttT$gene, which_tfbms]
+  }
+
+  # The original base tfbm matrix only includes genes with at least one tfbm for at least one regulator.
+  # Genes not mentioned in the base tfbm matrix implicitly have a count of zero for every tfbm.
+  # The preceding code additionally excludes any genes in the base tfbm matrix but not in the sampling frame (ttT$gene).
+  # The next option introduces explicit zeros to R, for all genes in the sampling frame but with (implicitly) zero tfbm count for any motif.
+  if(explicit_zeros){
+    print("Adding explicit zero counts to the tfbm matrix for genes in sampling frame, but not in tfbm matrix")
+    not_in_R = setdiff(ttT$gene, rownames(R))
+    nR = matrix(0,length(not_in_R), dim(R)[2])
+    rownames(nR) = not_in_R
+    R = rbind(R, nR)
+  }
+  return(R = R)
+}
+
+########################################################
+# UTILITY TO BE CALLED ONLY FROM ABOVE (else resolve ...)
+########################################################
+
+#' Join TFBM data to ttT
+#'
+#' @param ttT blah
+#' @param ttT_sub blah
+#' @param R blah
+#'
+#' @return a new gene wise tidy table with appended tfbm counts
+#'
+append_matrix <- function(ttT = ttT, ttT_sub = ttT_sub, R = R){
+  ttT =
+    as_tibble(R, rownames = "gene") %>%
+    left_join(ttT, by = "gene") %>%
+    mutate(a_priori = gene %in% ttT_sub$gene) # WHICH WERE "INTERESTING", POSSIBLY NULL
+}
+
+
+########################################################
+# UTILITY TO BE CALLED ONLY FROM ABOVE (else resolve ...)
+########################################################
+
+
+#' Title
+#'
+#' @param R blah
+#' @param ttT_sub bla
+#' @param n_sim blah
+#'
+#' @return
+#'
+#' @examples
+get_telis <- function(R = R, ttT_sub = ttT_sub, n_sim = n_sim){
+
+  telis = NULL
+  ########################################################
+  # TELIS p values
+  ########################################################
+
+  ########################################################
+  # A NEW NON-PARAMETRIC SCHEME:
+  # NON PARAMETRIC MONTE CARLO NULL DISTRIBUTION
+  ########################################################
+
+  responsive_lgl = rownames(R) %in% ttT_sub$gene # df gene set
+  (n_gene = sum(responsive_lgl))                 # size of focal gene set within R
+
+  sims = rerun(n_sim, sample(responsive_lgl))
+  sims = matrix(unlist(sims), nrow = n_sim, byrow = T)
+  sims = unique(sims) # for purists: this ensures that we only sample from the set of all possible permutations, WITH replacement
+
+  S    = (sims / n_gene) %*% R              # mean motif-count-per-gene statistic is a linear function of omega
+  obs  = (t(responsive_lgl / n_gene) %*% R) # corresponding motif statistics
+
+  telis$npar$p_vals_left_tail  = map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y >= .x)) # down regulation?
+  telis$npar$p_vals_right_tail = map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y <= .x)) # up regulation?
+
+  ########################################################
+  # STEVE'S ORIGINAL PARAMETRIC IID APPROXIMATION
+  ########################################################
+
+  mu = colMeans(R)
+  se = matrixStats::colSds(R)/sqrt(n_gene)
+  telis$par$p_vals_left_tail  = pnorm(obs, mu, se, lower.tail = T) %>% as.vector %>% `names<-`(names(mu)) # downregulation
+  telis$par$p_vals_right_tail = pnorm(obs, mu, se, lower.tail = F) %>% as.vector %>% `names<-`(names(mu)) # upregulation
+
+  ########################################################
+  # SOME REPORTING
+  ########################################################
+
+  print(str_c("dimensions of TFBM matrix R  :  ", dim(R)[1], " x ", dim(R)[2]))
+  print(str_c("n genes within R             : ",  length(responsive_lgl)))
+  print(str_c("n interesting genes within R : ",  sum(responsive_lgl)))
+
+  return(telis = telis)
+}

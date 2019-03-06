@@ -59,6 +59,10 @@ ttT <-
   lmFit(y, X) %>%
   eBayes %>%
   tidy_topTable(of_in = of_in)
+ 
+# Augment with a matrix 
+augmented_ttT = ttT %>% append_db(which_matrix = exonic1)
+summary(lm(B ~ AR, data = augmented_ttT)) 
 ```
 
 #### Infer DB
@@ -72,10 +76,20 @@ This step can be achieved either by regression of differential expression on mot
 ttT %>%
   infer_db(which_tfbms = "AR") %>%
   extract_db
+# slowly
+out = ttT %>% infer_db(which_tfbms = "AR") 
+summary(lm(B ~ AR, data = out$ttT)) # because infer_db appends tfbm counts to the tidy topTable ttT. The updated table is in out$ttT.
+out %>% extract_db # a shortcut to get the result of 3 related regressions
+
 # For all known tfbms: beware multiplicity
 ttT %>%
   infer_db %>%
   extract_db
+# slowly 
+out = ttT %>% infer_db 
+(immune_tfbms = stringr::str_subset(colnames(utr1), c("NFKB1|NFKB2|JUN|IRF2|IRF3|IRF4|IRF5|IRF7|IRF8|IRF9|CREB3|CREB3L1|NR3C1")))
+(f = str_c("B ~ ", str_c(immune_tfbms, collapse = " + "))) # specify a regression
+summary(lm(f, data = out$ttT))
 ```
 
 ##### Gene-set approach (see Cole et al)

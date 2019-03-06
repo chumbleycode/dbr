@@ -5,7 +5,7 @@
 \title{inf_ex_db}
 \usage{
 inf_ex_db(rhs, of_in = of_in, which_matrix = utr1, dat,
-  n_sim = 10000)
+  n_sim = 10000, ...)
 }
 \arguments{
 \item{rhs}{the right hand side of a regression, as a character vector of variable names}
@@ -17,6 +17,8 @@ inf_ex_db(rhs, of_in = of_in, which_matrix = utr1, dat,
 \item{dat}{an expression set object}
 
 \item{n_sim}{see infer_db}
+
+\item{...}{anything else}
 }
 \value{
 blah

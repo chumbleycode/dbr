@@ -25,6 +25,7 @@ The goal of dbr is to implicate some gene regulator as the upstream cause of dif
 
 The package is in development and is likely to change. It currently reimplements the important TeLiS method of Cole, which used a gene-set approach to infer DB. Our reimplementation incorporates the most up-to-date motif binding data. Additionally, our package provides new functionality that eschews the need to heuristically define a gene set, i.e. a set that is categorically "differentially expressed", before proceeding to DB analysis. Instead we simply regress gene-specific DE estimates on gene-specific binding-site counts over the entire relevant genome (the set of genes with at least one binding motif for at least one regulator). For computational convenience our regression approach currently avoids full multilevel modeling. 
 
+
 ## Installation
 
 You can install dbr with:
@@ -70,6 +71,11 @@ ttT <-
   lmFit(y, X) %>%
   eBayes %>%
   tidy_topTable(of_in = of_in)
+ 
+# Augment with a matrix 
+augmented_ttT = ttT %>% append_db(which_matrix = exonic1)
+summary(lm(B ~ AR, data = augmented_ttT)) 
+
 ```
 
 #### Infer DB
@@ -78,15 +84,26 @@ This step can be achieved either by regression of differential expression on mot
 
 ##### Regression approach
 
+
 ```r
 # REGRESS DE ESTIMATE ON MOTIF SITE COUNT FOR THE TRANSCRIPTION FACTOR "AR"
 ttT %>%
   infer_db(which_tfbms = "AR") %>%
   extract_db
+# slowly
+out = ttT %>% infer_db(which_tfbms = "AR") 
+summary(lm(B ~ AR, data = out$ttT)) # because infer_db appends tfbm counts to the tidy topTable ttT. The updated table is in out$ttT.
+out %>% extract_db # a shortcut to get the result of 3 related regressions
+
 # For all known tfbms: beware multiplicity
 ttT %>%
   infer_db %>%
   extract_db
+# slowly 
+out = ttT %>% infer_db 
+(immune_tfbms = stringr::str_subset(colnames(utr1), c("NFKB1|NFKB2|JUN|IRF2|IRF3|IRF4|IRF5|IRF7|IRF8|IRF9|CREB3|CREB3L1|NR3C1")))
+(f = str_c("B ~ ", str_c(immune_tfbms, collapse = " + "))) # specify a regression
+summary(lm(f, data = out$ttT))
 
 ```
 

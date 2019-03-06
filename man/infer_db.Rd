@@ -5,7 +5,7 @@
 \title{infer_db}
 \usage{
 infer_db(ttT, ttT_sub = NULL, which_matrix = NULL,
-  which_tfbms = NULL, n_sim = 10000, explicit_zeros = FALSE)
+  which_tfbms = NULL, explicit_zeros = FALSE, n_sim = 1e+05)
 }
 \arguments{
 \item{ttT}{is a tidy "topTable" object, output from tidy_topTable}
@@ -18,12 +18,12 @@ some way.}
 \item{which_tfbms}{a character vector of interesting binding motifs (cols of
 which matrix)}
 
-\item{n_sim}{the number of samples for the monte carlo inference}
-
 \item{explicit_zeros}{If TRUE, then create explicit zero counts in the tfbm
 matrix for all genes in the sample frame that are not in tfbm database. If
 FALSE, then only genes the set of genes with at least one binding motif for
 at least one regulator.}
+
+\item{n_sim}{the number of samples for the monte carlo inference}
 }
 \value{
 blah

@@ -10,6 +10,7 @@
 #' @param which_matrix  see infer_db
 #' @param dat  an expression set object
 #' @param n_sim  see infer_db
+#' @param ... anything else
 #'
 #' @return blah
 #' @export
