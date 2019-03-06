@@ -49,3 +49,5 @@ disp =
       enframe("tf", "p_value") %>%
       knitr::kable()
   }
+
+dbo = debugonce
