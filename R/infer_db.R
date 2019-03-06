@@ -191,13 +191,32 @@ append_db =
     if(is.null(which_matrix)) which_matrix = utr1 # default matrix, if unspecified
     R   = get_matrix(which_matrix = which_matrix, which_tfbms = which_tfbms, explicit_zeros = explicit_zeros)
     ttT = append_matrix(ttT = ttT, ttT_sub = ttT_sub, R = R)
+
+    return(ttT = ttT)
   }
 
 
+########################################################
+# UTILITY TO BE CALLED ONLY FROM ABOVE (else resolve ...)
+########################################################
 
+#' Join TFBM data to ttT
+#'
+#' @param ttT blah
+#' @param ttT_sub blah
+#' @param R blah
+#'
+#' @return a new gene wise tidy table with appended tfbm counts
+#'
+append_matrix <- function(ttT = ttT, ttT_sub = ttT_sub, R = R){
+  ttT =
+    as_tibble(R, rownames = "gene") %>%
+    left_join(ttT, by = "gene") %>%
+    mutate(gene_subset = gene %in% ttT_sub$gene) %>% # A LA TELIS, POSSIBLY NULL
+    select(names(ttT), gene_subset, colnames(R)) # reorder collumns
 
-
-
+  return(ttT = ttT)
+}
 
 ########################################################
 # UTILITY TO BE CALLED ONLY FROM ABOVE (else resolve ...)
@@ -247,25 +266,6 @@ get_matrix <- function(which_matrix = which_matrix, which_tfbms = which_tfbms, e
     R = rbind(R, nR)
   }
   return(R = R)
-}
-
-########################################################
-# UTILITY TO BE CALLED ONLY FROM ABOVE (else resolve ...)
-########################################################
-
-#' Join TFBM data to ttT
-#'
-#' @param ttT blah
-#' @param ttT_sub blah
-#' @param R blah
-#'
-#' @return a new gene wise tidy table with appended tfbm counts
-#'
-append_matrix <- function(ttT = ttT, ttT_sub = ttT_sub, R = R){
-  ttT =
-    as_tibble(R, rownames = "gene") %>%
-    left_join(ttT, by = "gene") %>%
-    mutate(a_priori = gene %in% ttT_sub$gene) # WHICH WERE "INTERESTING", POSSIBLY NULL
 }
 
 
