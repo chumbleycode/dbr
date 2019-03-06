@@ -4,10 +4,12 @@
 \alias{extract_db}
 \title{Title}
 \usage{
-extract_db(x, methods = NULL)
+extract_db(x, which_outcome = "B", methods = NULL)
 }
 \arguments{
 \item{x}{blah}
+
+\item{which_outcome}{in general the outcome variable may be chosen as logFC, B, etc}
 
 \item{methods}{blah}
 }

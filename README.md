@@ -29,7 +29,7 @@ Data: a simple example
 
 There are currently three TFBM matrices: utr1, exonic1, exonic\_utr1. Get more info for each via ?utr1, ?exonic1, etc.
 
-Motifs of interest may be found in the columns of these matrices. For example, recent literature has examined "a pre-specified set of TFs involved in inflammation (NF-kB and AP-1), IFN response (interferon-stimulated response elements; ISRE), SNS activity (CREB, which mediates SNS-induced b-adrenergic signaling), and glucocorticoid signaling (glucocorticoid receptor; GR)." In biomart nomenclature, "NF-kB" is is identified with NFKB1 or NFKB2. AP-1 is called JUN. ISRE is identified with set of tfs including IRF2, IRF3, IRF4, 5, 7, 8, 9. CREB identified with CREB3 or CREB3L1. GR is called NR3C1. This leaves us with 13 regulators plus one complex CEBPG::CREB3L1 (CEBPG\_CREB3L1), as follows.
+Look in the columns of these to find your DNA regulatory motifs of interest. For example, recent literature has examined "a pre-specified set of TFs involved in inflammation (NF-kB and AP-1), IFN response (interferon-stimulated response elements; ISRE), SNS activity (CREB, which mediates SNS-induced b-adrenergic signaling), and glucocorticoid signaling (glucocorticoid receptor; GR)." In biomart nomenclature, "NF-kB" is is identified with NFKB1 or NFKB2. AP-1 is called JUN. ISRE is identified with the set of motifs including IRF2, IRF3, IRF4, 5, 7, 8, 9. CREB is identified with CREB3 or CREB3L1. GR is called NR3C1. This leaves us with 13 regulators plus one complex CEBPG::CREB3L1 (CEBPG\_CREB3L1), as follows.
 
 ``` r
 immune_tfbms = c("CEBPG_CREB3L1", "CREB3", "CREB3L1", "IRF2", "IRF3", "IRF4", "IRF5", "IRF7", "IRF8", "IRF9", "JUN", "NFKB1", "NFKB2", "NR3C1")
@@ -41,7 +41,7 @@ Analysis: a simple example.
 
 We examine DB of some immune regulators amoung people with early-life stress (relative to unstressed) using data from Cole et al. (2016). Such analyses generally have two steps.
 
-1.  Differential expression (DE): Estimate differential RNA expression across exposure groups. Here we use a linear model: the exposure must be a *single* column of "design" matrix X (dbr cannot currently handle treatments defined across multiple collumns, e.g. factors with many levels).
+1.  Differential expression (DE): Estimate differential RNA expression across exposure groups. Here we use a linear model: the exposure must be a *single* column of "design" matrix of this linear model (dbr cannot currently handle treatments defined across multiple collumns, e.g. factors with many levels).
 2.  Differential binding (DB): Infer dependence of this estimate (over genes) on the binding-site count.
 
 #### DE
@@ -61,7 +61,7 @@ X <- dat %>%
   select(age = `age:ch1`,
          soldier = `childsoldier:ch1`,
          edu = `educationlevel:ch1`)
-X     <- model.matrix(~ soldier + edu + age, data = X) 
+X <- model.matrix(~ soldier + edu + age, data = X) 
 
 # Estimate DE using standard limmma/edger pipeline. 
 of_in <- "soldier1"
@@ -112,7 +112,7 @@ ttT %>%
 
 ##### An alternative approach (see Cole et al)
 
-This approach requires some heuristic to select a set of subgenes to categorically label as DE. For example, we can filter on uncorrected p.value, or logfc (not an inference). This subset is identified by the argument ttT\_sub to infer\_db(). ttT\_sub is just a scrict subset of the rows of our universe of genes, given in ttT above (e.g. the subset whose logFC, or uncorrect p value exceeds some heuristic value). The additional options blow indicate that we have select our prefered tfbm matrix "which\_matrix", tfbm hypothesis set "which\_tfbms", and methods (p\_npar, p\_par, which require tt\_sub be specified).
+This approach requires some heuristic to select a set of subgenes to categorically label as DE. For example, we can filter on uncorrected p.value, or logfc (not an inference). This subset is identified by the argument ttT\_sub to infer\_db(). ttT\_sub is just a scrict subset of the rows of our universe of genes, given in ttT above (e.g. the subset whose logFC, or uncorrect p value exceeds some heuristic value). The additional options blow indicate that we have selected our prefered tfbm matrix "which\_matrix", tfbm hypothesis set "which\_tfbms", and statistical methods (p\_npar, p\_par, which require tt\_sub be specified).
 
 ``` r
 ttT %>%
