@@ -50,4 +50,3 @@ disp =
       knitr::kable()
   }
 
-dbo = debugonce

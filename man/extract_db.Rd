@@ -17,5 +17,10 @@ extract_db(x, which_outcome = "B", methods = NULL)
 blah
 }
 \description{
-Title
+GIVES A TABLE OF P-VALUES FOR DIFFERENT METHODS:
+p_uni  = SIMPLE UNIVARIATE REGRESSION OF B ON EACH TFBM
+p_cov  = MULTPLE REGRESSION OF B ON ALL TFBM's SIMULTANIOUSLY
+p_tot  = SIMPLE UNIVARIATE OF B ON THE TOTAL NUMBER SITES (NOT SPECIFIC TO ONE TFBM)
+p_par  = parametric telis, RETURNED  ONLY IF ARGUMENT 'tT_sub' IS GIVEN TO "db"
+p_npar = nonparametric telis, RETURNED  ONLY IF ARGUMENT 'tT_sub' IS GIVEN TO "db"
 }

@@ -17,13 +17,15 @@ knitr::opts_chunk$set(
 ## Shanahan Group at UZH and Levitt TFBM data
 
 
-<!-- [![Travis build status](https://travis-ci.org/chumbleycode/dbr.svg?branch=master)](https://travis-ci.org/chumbleycode/dbr) -->
+[![Travis build status](https://travis-ci.org/chumbleycode/dbr.svg?branch=master)](https://travis-ci.org/chumbleycode/dbr)
 
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/chumbleycode/dbr?branch=master&svg=true)](https://ci.appveyor.com/project/chumbleycode/dbr)
 
-The goal of dbr is to implicate a gene regulator in the observed differential RNA expression between differerent treatment groups. We then say that there is "differential binding" (DB) of the regulator over treatments. In practice, dbr asks whether the pattern of differential RNA expression over genes reflects (the DNA binding-site availability of) some upstream gene regulator. Binding-site availability or "enrichment" just refers to the total count of binding sites found in the DNA of each gene, which is in turn derived from external genomic DNA. 
+The goal of dbr is to implicate a gene $regulator$ - typically an upstream transcription factor - in the differential RNA expression observed between treatment groups. We then say that there is "differential binding" (DB) of the regulator over treatments. In practice, dbr asks whether the pattern of differential RNA expression over genes reflects (the per-gene count of DNA binding-site motifs for) some upstream gene regulator.
+ 
+In addition to the raw gene-by-motif count matrices, the package currently provides some functions to augment the popular limma package. The package is in development and is likely to change. It currently reimplements the important TeLiS method of Cole et. al. (2005), which used a gene-set approach to infer DB. Our reimplementation incorporates the most up-to-date motif binding data, offers a non-parametric version of TeLiS (when the sampling frame of genes is small), and provides smooth compatibility with limma. 
 
-The package is in development and is likely to change. It currently reimplements the important TeLiS method of Cole et. al. (2005), which used a gene-set approach to infer DB. Our reimplementation incorporates the most up-to-date motif binding data. Additionally, our package offers a new, non-parametric version of TeLiS, and provides simple new functionality that eschews the need to heuristically define a gene set altogether, i.e. a set that is categorically "differentially expressed" (prior to DB analysis proper). Instead we simply regress gene-specific DE estimates on gene-specific binding-site counts over the entire relevant genome (the set of genes with at least one binding motif for at least one regulator). For computational convenience our regression approach currently avoids full multilevel modeling. 
+The package provides simple new functionality that aims to eschews the need to heuristically categorize genes, prior to DB analysis proper, as differentially expressed or not. The simplest - cheap and cheerful - approach is to simply regress gene-specific DE estimates on gene-specific binding-site counts over the entire relevant genome (genes for which it is possible to estimate DE over treatment or exposure groups). This approach will be validated and extended to multilevel modeling. 
 
 ## Installation
 
@@ -37,9 +39,15 @@ library(dbr)
 
 ## Data: a simple example
 
-There are currently three TFBM matrices: utr1, exonic1, exonic_utr1. Get more info for each via ?utr1, ?exonic1, etc.
+There are currently three TFBM matrices: utr1, exonic1, exonic_utr1. Get more info for each via ?utr1, ?exonic1, etc. Examine the gene-by-motif count matrices in the R console with:
 
-Look in the columns of these to find your DNA regulatory motifs of interest. For example, recent literature has examined "a pre-specified set of TFs involved in inflammation (NF-kB and AP-1), IFN response (interferon-stimulated response elements; ISRE), SNS activity (CREB, which mediates SNS-induced b-adrenergic signaling), and glucocorticoid signaling (glucocorticoid receptor; GR)."  In biomart nomenclature, "NF-kB" is is identified with NFKB1 or NFKB2.  AP-1 is called JUN. ISRE is identified with the set of motifs including IRF2, IRF3, IRF4, 5, 7, 8, 9. CREB is identified with CREB3 or CREB3L1. GR is called NR3C1. This leaves us with 13 regulators plus one complex CEBPG::CREB3L1 (CEBPG_CREB3L1), as follows.
+```r
+utr1
+exonic1
+# etc
+```
+
+Look for your DNA regulatory motifs of interest in the columns of these matrices. For example, recent literature has examined "a pre-specified set of TFs involved in inflammation (NF-kB and AP-1), IFN response (interferon-stimulated response elements; ISRE), SNS activity (CREB, which mediates SNS-induced b-adrenergic signaling), and glucocorticoid signaling (glucocorticoid receptor; GR)."  In biomart nomenclature, "NF-kB" is is identified with NFKB1 or NFKB2.  AP-1 is called JUN. ISRE is identified with the set of motifs including IRF2, IRF3, IRF4, 5, 7, 8, 9. CREB is identified with CREB3 or CREB3L1. GR is called NR3C1. This leaves us with 13 regulators plus one complex CEBPG::CREB3L1 (CEBPG_CREB3L1), as follows.
 
 ```r
 immune_tfbms = c("CEBPG_CREB3L1", "CREB3", "CREB3L1", "IRF2", "IRF3", "IRF4", "IRF5", "IRF7", "IRF8", "IRF9", "JUN", "NFKB1", "NFKB2", "NR3C1")
@@ -50,8 +58,8 @@ utr1[, immune_tfbms] # the gene-by-motif matrix for immune motifs of interest
 
 We examine DB of some immune regulators amoung people with early-life stress (relative to unstressed) using data from Cole et al. (2016). Such analyses generally have two steps. 
 
-1. Differential expression (DE): Estimate differential RNA expression across exposure groups. Here we use a linear model: the exposure must be a *single* column of "design" matrix of this linear model (dbr cannot currently handle treatments defined across multiple collumns, e.g. factors with many levels). 
-2. Differential binding (DB): Infer dependence of this estimate (over genes) on the binding-site count.
+1. Differential expression (DE): Estimate differential RNA expression across exposure groups. Here we use a linear model: the exposure must currently be a *single* column of "design" matrix of this linear model (dbr cannot currently handle treatments defined across multiple collumns, e.g. factors with many levels). 
+2. Differential binding (DB): Infer dependence of the above, per-gene, estimates on the binding-site count of some regulator(s) of interest.
 
 #### DE
 
@@ -72,64 +80,82 @@ X <- dat %>%
          edu = `educationlevel:ch1`)
 X <- model.matrix(~ soldier + edu + age, data = X) 
 
+# one of the columns of X
+of_in <- "soldier1" 
+
 # Estimate DE using standard limmma/edger pipeline. 
-of_in <- "soldier1"
 ttT <-
   lmFit(y, X) %>%
   eBayes %>%
   tidy_topTable(of_in = of_in)
 ```
 
+We can eyeball each gene's log fold change alongside the binding motif counts, perhaps restricting to only those genes with at least one known motif for any regulator (with the argument explicit_zeros = FALSE). 
+
+```r
+# The estimated DE effects, appending motif counts for each regulator
+ttT %>% 
+  append_db(which_matrix = utr1,
+            which_tfbms = immune_tfbms) 
+
+# Similar, but discarding genes without at least one motif from any known regulator (amoung those in which_matrix)
+ttT %>% 
+  append_db(which_matrix = utr1, 
+            which_tfbms = immune_tfbms, 
+            explicit_zeros = FALSE) 
+```
+
 #### DB
 
-Perhaps the simplest differential binding analysis is just a regression of gene-wise DE estimates on motif site count.
+Perhaps the simplest DB analysis is just a regression of gene-wise DE estimates on motif site count. This is an approximation to a full multilevel model.
 
 ##### Regression approach
 
 
 ```r
-# Note the number of genes in the sample frame, the number containing at least 1 DNA motif, and the intersection of these gene-sets.
-length(ttT$gene)
-length(rownames(utr1))
-length(intersect(rownames(utr1), ttT$gene))
-
-# Inspect the tfbm-augmented DE results: note the dimensions
-ttT %>% append_db(which_matrix = utr1) 
-# To include explicit zeros
-ttT %>% append_db(which_matrix = utr1, explicit_zeros = T)
-
 # regress DE on one motif of interest
 summary(lm(logFC ~ NR3C1, data = append_db(ttT))) 
-summary(lm(B ~ NR3C1, data = append_db(ttT))) # log odds
-summary(lm(B ~ NR3C1, data = append_db(ttT, explicit_zeros = T))) # note: different degrees of freedom
-summary(lm(B ~ NR3C1, data = append_db(ttT, which_matrix = exonic1))) # note: different binding location 
 
-# REGRESS DE ESTIMATE (DEFAULT IS "B" LOG ODDS) ON MOTIF SITE COUNT FOR THE TRANSCRIPTION FACTOR: BEWARE MULTIPLICITY
+# Using dbr functions to regress logFC on motif site count on all immune_motifs: beware multiplicity
 ttT %>%
   infer_db(which_tfbms = immune_tfbms) %>%
   extract_db
 
-# With a different outcome logFC:
-ttT %>%
-  infer_db(which_tfbms = immune_tfbms) %>%
-  extract_db(which_outcome = "logFC")
-
-# EXPLORATORY FISHING: BEWARE MULTIPLICITY
-ttT %>%
-  infer_db %>%
-  extract_db 
-
 ```
+
+Here p_uni is the univariate p-value from a set of simple univariate regressions of logFC on each motif, and p_cov is the corresponding p-value from a multivariate regression. The latter relates the $partial$ or conditional relation between a motif and DE, adjusting for the remaining motifs. Any NA's in the output for this column reflect singularities or colinearities in the design matrix (i.e. motifs are too highly related to be individually estimated).
 
 ##### An alternative approach (see Cole et al)
 
-This approach requires some heuristic to select a set of subgenes to categorically label as DE. For example, we can filter on uncorrected p.value, or logfc (not an inference). This subset is identified by the argument ttT_sub to infer_db(). ttT_sub is just a scrict subset of the rows of our universe of genes, given in ttT above (e.g. the subset whose logFC, or uncorrect p value exceeds some heuristic value). The additional options blow indicate that we have selected our prefered tfbm matrix "which_matrix", tfbm hypothesis set "which_tfbms", and statistical methods (p_npar, p_par, which require tt_sub be specified).
+This approach requires that we first filter some genes to label as categorically DE, e.g. those with a high logFC. This filtering is not, in itself, a statistical inference. We give three examples of how to do this below. Recall that the logFC is the estimated log2-fold-change corresponding to the effect of interest. Therefore, the set of "genes showing > 20% difference in expression" in our paramater of interest is:
+
+```r
+ttT_sub = filter(ttT, logFC >= log2(1.2))
+```
+
+This is different from the set of genes with the 20% most extreme fold changes, i.e. the top and bottom deciles, which is:
+
+```r
+ttT_sub = filter(ttT, ntile(logFC, 10) %in% c(1,10))
+```
+
+One might alternatively consider the set of values with uncorrected p-values below 0.05 (not an inference):
+
+```r
+ttT_sub = filter(ttT, P.Value <= 0.05)
+```
+
+Having chosen one of these, or defined your own, the filtered gene-subset enters as the first argument to infer_db() below, like so:
 
 ```r
 ttT %>%
-  infer_db(ttT_sub        = filter(ttT, P.Value <= 0.05),
-           which_matrix   = exonic1_utr1 ,
-           which_tfbms    = immune_tfbms,
-           explicit_zeros = TRUE) %>%
-  extract_db(methods =  c("p_npar", "p_par")) 
-``` 
+  infer_db(ttT_sub        = ttT_sub,
+           which_tfbms    = immune_tfbms) %>%
+  extract_db
+```
+
+Here "p_par", "p_npar" speficies that we want parametric and non-parameteric p-values for this TeLiS approach.
+
+##### Some other ways to filter genes:
+
+"In addition to a priori gene sets, we also assessed empirical transcriptome correlates of each demographic factor (Figure 2A).  Each demographic parameter was associated with hundreds of genes showing > 20% difference in expression across the observed range of variation (although the statistical significance of these individual transcript associations varied, with some dimensions such sex, race, and BMI showing robust effects at a genome-wide false discovery rate (FDR) of 5%, whereas others failed to yield significant effects after correction for multiple testing; Supporting Information Figure S1)."

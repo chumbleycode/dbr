@@ -5,7 +5,7 @@
 \title{append_db}
 \usage{
 append_db(ttT, ttT_sub = NULL, which_matrix = NULL,
-  which_tfbms = NULL, explicit_zeros = FALSE)
+  which_tfbms = NULL, explicit_zeros = TRUE)
 }
 \arguments{
 \item{ttT}{see infer_db}

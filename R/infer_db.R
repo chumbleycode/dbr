@@ -22,7 +22,7 @@ infer_db =
   function(ttT, ttT_sub = NULL,
            which_matrix = NULL,
            which_tfbms = NULL,
-           explicit_zeros = FALSE,
+           explicit_zeros = TRUE,
            n_sim = 100000){
 
     if(is.null(which_matrix)) which_matrix = utr1 # default matrix, if unspecified
@@ -62,7 +62,7 @@ append_db =
   function(ttT, ttT_sub = NULL,
            which_matrix = NULL,
            which_tfbms = NULL,
-           explicit_zeros = FALSE){
+           explicit_zeros = TRUE){
 
     if(is.null(which_matrix)) which_matrix = utr1 # default matrix, if unspecified
     R   = get_matrix(ttT = ttT, which_matrix = which_matrix, which_tfbms = which_tfbms, explicit_zeros = explicit_zeros)
@@ -172,23 +172,9 @@ get_telis <- function(R = R, ttT_sub = ttT_sub, n_sim = n_sim){
   # TELIS p values
   ########################################################
 
-  ########################################################
-  # A NEW NON-PARAMETRIC SCHEME:
-  # NON PARAMETRIC MONTE CARLO NULL DISTRIBUTION
-  ########################################################
-
   responsive_lgl = rownames(R) %in% ttT_sub$gene # df gene set
   (n_gene = sum(responsive_lgl))                 # size of focal gene set within R
-
-  sims = rerun(n_sim, sample(responsive_lgl))
-  sims = matrix(unlist(sims), nrow = n_sim, byrow = T)
-  sims = unique(sims) # for purists: this ensures that we only sample from the set of all possible permutations, WITH replacement
-
-  S    = (sims / n_gene) %*% R              # mean motif-count-per-gene statistic is a linear function of omega
   obs  = (t(responsive_lgl / n_gene) %*% R) # corresponding motif statistics
-
-  telis$npar$p_vals_left_tail  = map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y >= .x)) # down regulation?
-  telis$npar$p_vals_right_tail = map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y <= .x)) # up regulation?
 
   ########################################################
   # STEVE'S ORIGINAL PARAMETRIC IID APPROXIMATION
@@ -198,6 +184,29 @@ get_telis <- function(R = R, ttT_sub = ttT_sub, n_sim = n_sim){
   se = matrixStats::colSds(R)/sqrt(n_gene)
   telis$par$p_vals_left_tail  = pnorm(obs, mu, se, lower.tail = T) %>% as.vector %>% `names<-`(names(mu)) # downregulation
   telis$par$p_vals_right_tail = pnorm(obs, mu, se, lower.tail = F) %>% as.vector %>% `names<-`(names(mu)) # upregulation
+
+  if(dim(R)[1] <= 100) {
+    # Set to <= Inf to ALWAYS do non parametric telis
+
+    ########################################################
+    # A NEW NON-PARAMETRIC SCHEME:
+    # NON PARAMETRIC MONTE CARLO NULL DISTRIBUTION
+    ########################################################
+
+    sims = rerun(n_sim, sample(responsive_lgl))
+    sims = matrix(unlist(sims), nrow = n_sim, byrow = T)
+    sims = unique(sims) # for purists: this ensures that we only sample from the set of all possible permutations, WITH replacement
+
+    S    = (sims / n_gene) %*% R              # mean motif-count-per-gene statistic is a linear function of omega
+
+    telis$npar$p_vals_left_tail  = map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y >= .x)) # down regulation?
+    telis$npar$p_vals_right_tail = map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y <= .x)) # up regulation?
+
+  } else {
+
+    print("For large sample frames > 100000, there is little benefit in return for the computational expense of permutation analysis")
+
+  }
 
   ########################################################
   # SOME REPORTING
