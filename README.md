@@ -117,21 +117,18 @@ Here p\_uni is the univariate p-value from a set of simple univariate regression
 
 ##### An alternative approach (see Cole et al)
 
-This approach requires that we first filter some genes to label as categorically DE, e.g. those with a high logFC. This filtering is not, in itself, a statistical inference. We give three examples of how to do this below. Recall that the logFC is the estimated log2-fold-change corresponding to the effect of interest. Therefore, the set of "genes showing &gt; 20% difference in expression" in our paramater of interest is:
+This approach requires that we first filter some genes to label as categorically DE, e.g. those with a high logFC. This filtering is not, in itself, a statistical inference. We give three examples of how to do this below.
 
 ``` r
+
+# 1. genes showing > 20% difference in expression
+# Recall that the logFC is the estimated log2-fold-change corresponding to the effect of interest. 
 ttT_sub = filter(ttT, logFC >= log2(1.2))
-```
 
-This is different from the set of genes with the 20% most extreme fold changes, i.e. the top and bottom deciles, which is:
-
-``` r
+# 2. top and bottom deciles (most extreme 20%)
 ttT_sub = filter(ttT, ntile(logFC, 10) %in% c(1,10))
-```
-
-One might alternatively consider the set of values with uncorrected p-values below 0.05 (not an inference):
-
-``` r
+ 
+# 3. genes whose uncorrected p-values below 0.05 (not an inference):
 ttT_sub = filter(ttT, P.Value <= 0.05)
 ```
 
