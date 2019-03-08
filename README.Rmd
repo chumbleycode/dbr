@@ -18,7 +18,6 @@ knitr::opts_chunk$set(
 
 
 [![Travis build status](https://travis-ci.org/chumbleycode/dbr.svg?branch=master)](https://travis-ci.org/chumbleycode/dbr)
-
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/chumbleycode/dbr?branch=master&svg=true)](https://ci.appveyor.com/project/chumbleycode/dbr)
 
 The goal of dbr is to implicate a gene $regulator$ - typically an upstream transcription factor - in the differential RNA expression observed between treatment groups. We then say that there is "differential binding" (DB) of the regulator over treatments. In practice, dbr asks whether the pattern of differential RNA expression over genes reflects (the per-gene count of DNA binding-site motifs for) some upstream gene regulator.
@@ -39,15 +38,7 @@ library(dbr)
 
 ## Data: a simple example
 
-There are currently three TFBM matrices: utr1, exonic1, exonic_utr1. Get more info for each via ?utr1, ?exonic1, etc. Examine the gene-by-motif count matrices in the R console with:
-
-```r
-utr1
-exonic1
-# etc
-```
-
-Look for your DNA regulatory motifs of interest in the columns of these matrices. For example, recent literature has examined "a pre-specified set of TFs involved in inflammation (NF-kB and AP-1), IFN response (interferon-stimulated response elements; ISRE), SNS activity (CREB, which mediates SNS-induced b-adrenergic signaling), and glucocorticoid signaling (glucocorticoid receptor; GR)."  In biomart nomenclature, "NF-kB" is is identified with NFKB1 or NFKB2.  AP-1 is called JUN. ISRE is identified with the set of motifs including IRF2, IRF3, IRF4, 5, 7, 8, 9. CREB is identified with CREB3 or CREB3L1. GR is called NR3C1. This leaves us with 13 regulators plus one complex CEBPG::CREB3L1 (CEBPG_CREB3L1), as follows.
+There are currently three TFBM matrices: utr1, exonic1, exonic_utr1. Get more info for each via ?utr1, ?exonic1, etc. Look for your DNA regulatory motifs of interest in the columns of these matrices. For example, recent literature has examined "a pre-specified set of TFs involved in inflammation (NF-kB and AP-1), IFN response (interferon-stimulated response elements; ISRE), SNS activity (CREB, which mediates SNS-induced b-adrenergic signaling), and glucocorticoid signaling (glucocorticoid receptor; GR)."  In biomart nomenclature, "NF-kB" is is identified with NFKB1 or NFKB2.  AP-1 is called JUN. ISRE is identified with the set of motifs including IRF2, IRF3, IRF4, 5, 7, 8, 9. CREB is identified with CREB3 or CREB3L1. GR is called NR3C1. This leaves us with 13 regulators plus one complex CEBPG::CREB3L1 (CEBPG_CREB3L1), as follows. Examine the gene-by-motif count matrices in the R console with:
 
 ```r
 immune_tfbms = c("CEBPG_CREB3L1", "CREB3", "CREB3L1", "IRF2", "IRF3", "IRF4", "IRF5", "IRF7", "IRF8", "IRF9", "JUN", "NFKB1", "NFKB2", "NR3C1")
@@ -80,29 +71,11 @@ X <- dat %>%
          edu = `educationlevel:ch1`)
 X <- model.matrix(~ soldier + edu + age, data = X) 
 
-# one of the columns of X
-of_in <- "soldier1" 
-
 # Estimate DE using standard limmma/edger pipeline. 
 ttT <-
   lmFit(y, X) %>%
   eBayes %>%
-  tidy_topTable(of_in = of_in)
-```
-
-We can eyeball each gene's log fold change alongside the binding motif counts, perhaps restricting to only those genes with at least one known motif for any regulator (with the argument explicit_zeros = FALSE). 
-
-```r
-# The estimated DE effects, appending motif counts for each regulator
-ttT %>% 
-  append_db(which_matrix = utr1,
-            which_tfbms = immune_tfbms) 
-
-# Similar, but discarding genes without at least one motif from any known regulator (amoung those in which_matrix)
-ttT %>% 
-  append_db(which_matrix = utr1, 
-            which_tfbms = immune_tfbms, 
-            explicit_zeros = FALSE) 
+  tidy_topTable(of_in = "soldier1") # "soldier1" is one column of X
 ```
 
 #### DB
@@ -116,23 +89,21 @@ Perhaps the simplest DB analysis is just a regression of gene-wise DE estimates 
 # regress DE on one motif of interest
 summary(lm(logFC ~ NR3C1, data = append_db(ttT))) 
 
-# Using dbr functions to regress logFC on motif site count on all immune_motifs: beware multiplicity
+# Or, use dbr to regress logFC on motif site count on all immune_motifs: beware multiple testing
 ttT %>%
   infer_db(which_tfbms = immune_tfbms) %>%
   extract_db
-
 ```
 
-Here p_uni is the univariate p-value from a set of simple univariate regressions of logFC on each motif, and p_cov is the corresponding p-value from a multivariate regression. The latter relates the $partial$ or conditional relation between a motif and DE, adjusting for the remaining motifs. Any NA's in the output for this column reflect singularities or colinearities in the design matrix (i.e. motifs are too highly related to be individually estimated).
+Here p_uni is the univariate p-value from a set of simple univariate regressions of logFC on each motif, and p_cov is the corresponding p-value from a multivariate regression. The latter relates the $partial$ or conditional relation between a motif and DE, adjusting for the remaining motifs. Any NA's in the output for this column reflect colinearities in the design matrix (i.e. motifs are too highly related to be individually estimated).
 
 ##### An alternative approach (see Cole et al)
 
 This approach requires that we first filter some genes to label as categorically DE, e.g. those with a high logFC. This filtering is not, in itself, a statistical inference. We give three examples of how to do this below. 
 
 ```r
-
 # 1. genes showing > 20% difference in expression
-# Recall that the logFC is the estimated log2-fold-change corresponding to the effect of interest. 
+# (Recalling that logFC is the estimated log2-fold-change of our effect) 
 ttT_sub = filter(ttT, logFC >= log2(1.2))
 
 # 2. top and bottom deciles (most extreme 20%)
@@ -151,8 +122,21 @@ ttT %>%
   extract_db
 ```
 
-Here "p_par", "p_npar" speficies that we want parametric and non-parameteric p-values for this TeLiS approach.
+Here "p_par" is the 2 sided p-value for parametric TeLiS (par_p_over and par_p_under are the corresponding one-tailed values for over and motif-underrepresentation). If perm_telis = TRUE, then p_npar will give a (computationally costly) permutation p-value for TeLiS.
 
-##### Some other ways to filter genes:
+##### Chi-squared test
+
+Other ways to relate DE labels to transcription factor motif, e.g. CREB3 motif 
+
+```r
+# Chi-squared
+append_db(ttT,ttT_sub = ttT_sub) %>% 
+  select(gene_subset, CREB3) %>% 
+  table %>% 
+  chisq.test
+```
+
+##### Some other ways to filter genes for TeLiS:
 
 "In addition to a priori gene sets, we also assessed empirical transcriptome correlates of each demographic factor (Figure 2A).  Each demographic parameter was associated with hundreds of genes showing > 20% difference in expression across the observed range of variation (although the statistical significance of these individual transcript associations varied, with some dimensions such sex, race, and BMI showing robust effects at a genome-wide false discovery rate (FDR) of 5%, whereas others failed to yield significant effects after correction for multiple testing; Supporting Information Figure S1)."
+

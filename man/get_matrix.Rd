@@ -8,13 +8,13 @@ get_matrix(ttT = ttT, which_matrix = which_matrix,
   which_tfbms = which_tfbms, explicit_zeros = explicit_zeros)
 }
 \arguments{
-\item{ttT}{blah}
+\item{ttT}{a tidied topTable object}
 
-\item{which_matrix}{blah}
+\item{which_matrix}{which gene by binding motif count matrix}
 
-\item{which_tfbms}{blah}
+\item{which_tfbms}{named columns of "which_matrix"}
 
-\item{explicit_zeros}{blah}
+\item{explicit_zeros}{Add explicit zero counts to the tfbm matrix for genes in sampling frame, but not in tfbm matrix}
 }
 \value{
 a tidied tfbm matrix

@@ -7,11 +7,11 @@
 append_matrix(ttT = ttT, ttT_sub = ttT_sub, R = R)
 }
 \arguments{
-\item{ttT}{blah}
+\item{ttT}{a tidied topTable object}
 
-\item{ttT_sub}{blah}
+\item{ttT_sub}{a tidied topTable object whose rows contain only "DE" genes}
 
-\item{R}{blah}
+\item{R}{a gene by binding motif count matrix}
 }
 \value{
 a new gene wise tidy table with appended tfbm counts

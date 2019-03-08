@@ -4,17 +4,17 @@
 \alias{get_telis}
 \title{get_telis}
 \usage{
-get_telis(R = R, ttT_sub = ttT_sub, n_sim = n_sim)
+get_telis(R = R, ttT_sub = ttT_sub, n_sim = n_sim,
+  perm_telis = FALSE)
 }
 \arguments{
-\item{R}{blah}
+\item{R}{a gene by binding motif count matrix}
 
-\item{ttT_sub}{bla}
+\item{ttT_sub}{a tidied topTable object whose rows contain only "DE" genes}
 
-\item{n_sim}{blah}
-}
-\value{
-blah
+\item{n_sim}{number of permutations if non parametric telis}
+
+\item{perm_telis}{non-parametric telis?}
 }
 \description{
 get_telis

@@ -13,6 +13,7 @@
 #'   matrix for all genes in the sample frame that are not in tfbm database. If
 #'   FALSE, then only genes the set of genes with at least one binding motif for
 #'   at least one regulator.
+#' @param perm_telis if ttT_sub is provided, do you want non-parameteric permutation TeLiS in addition to parametric
 #'
 #' @return blah
 #' @export
@@ -23,6 +24,7 @@ infer_db =
            which_matrix = NULL,
            which_tfbms = NULL,
            explicit_zeros = TRUE,
+           perm_telis = FALSE,
            n_sim = 100000){
 
     if(is.null(which_matrix)) which_matrix = utr1 # default matrix, if unspecified
@@ -31,7 +33,7 @@ infer_db =
 
     # TELIS
     telis = NULL
-    if(!is.null(ttT_sub)) telis <- get_telis(R = R, ttT_sub = ttT_sub, n_sim = n_sim) # possibly update telis = NULL
+    if(!is.null(ttT_sub)) telis <- get_telis(R = R, ttT_sub = ttT_sub, n_sim = n_sim, perm_telis = perm_telis) # possibly update telis = NULL
 
     # REGRESSIONS
     m =
@@ -80,9 +82,9 @@ append_db =
 #'
 #' Join TFBM data to ttT
 #'
-#' @param ttT blah
-#' @param ttT_sub blah
-#' @param R blah
+#' @param ttT a tidied topTable object
+#' @param ttT_sub a tidied topTable object whose rows contain only "DE" genes
+#' @param R a gene by binding motif count matrix
 #'
 #' @return a new gene wise tidy table with appended tfbm counts
 #'
@@ -105,10 +107,10 @@ append_matrix <- function(ttT = ttT, ttT_sub = ttT_sub, R = R){
 #'
 #' Unexported function to LOAD AND TIDY TFBM MATRIX
 #'
-#' @param which_matrix blah
-#' @param which_tfbms  blah
-#' @param explicit_zeros blah
-#' @param ttT blah
+#' @param which_matrix which gene by binding motif count matrix
+#' @param which_tfbms  named columns of "which_matrix"
+#' @param explicit_zeros Add explicit zero counts to the tfbm matrix for genes in sampling frame, but not in tfbm matrix
+#' @param ttT a tidied topTable object
 #'
 #' @return a tidied tfbm matrix
 #'
@@ -158,14 +160,14 @@ get_matrix <- function(ttT = ttT, which_matrix = which_matrix, which_tfbms = whi
 
 #' get_telis
 #'
-#' @param R blah
-#' @param ttT_sub bla
-#' @param n_sim blah
+#' @param R a gene by binding motif count matrix
+#' @param ttT_sub a tidied topTable object whose rows contain only "DE" genes
+#' @param n_sim number of permutations if non parametric telis
+#' @param perm_telis non-parametric telis?
 #'
-#' @return blah
 #'
 #' @examples
-get_telis <- function(R = R, ttT_sub = ttT_sub, n_sim = n_sim){
+get_telis <- function(R = R, ttT_sub = ttT_sub, n_sim = n_sim, perm_telis = FALSE){
 
   telis = NULL
   ########################################################
@@ -177,17 +179,19 @@ get_telis <- function(R = R, ttT_sub = ttT_sub, n_sim = n_sim){
   obs  = (t(responsive_lgl / n_gene) %*% R) # corresponding motif statistics
 
   ########################################################
-  # STEVE'S ORIGINAL PARAMETRIC IID APPROXIMATION
+  # STEVE'S ORIGINAL PARAMETRIC IID TELIS (THE GAUSSIAN )
   ########################################################
 
   mu = colMeans(R)
   se = matrixStats::colSds(R)/sqrt(n_gene)
-  telis$par$p_vals_left_tail  = pnorm(obs, mu, se, lower.tail = T) %>% as.vector %>% `names<-`(names(mu)) # downregulation
-  telis$par$p_vals_right_tail = pnorm(obs, mu, se, lower.tail = F) %>% as.vector %>% `names<-`(names(mu)) # upregulation
+  telis$par$p_under  = pnorm(obs, mu, se, lower.tail = T) %>% as.vector %>% `names<-`(names(mu)) # downregulation
+  telis$par$p_over   = pnorm(obs, mu, se, lower.tail = F) %>% as.vector %>% `names<-`(names(mu)) # upregulation
 
-  if(dim(R)[1] <= 100) {
-    # Set to <= Inf to ALWAYS do non parametric telis
+  if(perm_telis) {
 
+    if (dim(R)[1] > 100) {
+      print("For large sample frames, there is little benefit in return for the computational expense of permutation analysis")
+    }
     ########################################################
     # A NEW NON-PARAMETRIC SCHEME:
     # NON PARAMETRIC MONTE CARLO NULL DISTRIBUTION
@@ -199,12 +203,8 @@ get_telis <- function(R = R, ttT_sub = ttT_sub, n_sim = n_sim){
 
     S    = (sims / n_gene) %*% R              # mean motif-count-per-gene statistic is a linear function of omega
 
-    telis$npar$p_vals_left_tail  = map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y >= .x)) # down regulation?
-    telis$npar$p_vals_right_tail = map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y <= .x)) # up regulation?
-
-  } else {
-
-    print("For large sample frames > 100000, there is little benefit in return for the computational expense of permutation analysis")
+    telis$npar$p_under  = map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y >= .x)) # down regulation?
+    telis$npar$p_over   = map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y <= .x)) # up regulation?
 
   }
 

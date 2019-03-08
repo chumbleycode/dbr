@@ -33,10 +33,6 @@ regress_db =
       lm(y ~ ., data = X) %>%
       broom::tidy() %>%
       filter(term != "(Intercept)") # all together
-    out$m_tot =
-      lm(y ~ rowSums(X)) %>%
-      broom::tidy() %>%
-      filter(term != "(Intercept)") # total number of sites
 
     return(out = out)
   }
