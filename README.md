@@ -131,6 +131,3 @@ append_db(ttT,ttT_sub = ttT_sub) %>%
 ##### Some other ways to filter genes for TeLiS:
 
 "In addition to a priori gene sets, we also assessed empirical transcriptome correlates of each demographic factor (Figure 2A). Each demographic parameter was associated with hundreds of genes showing &gt; 20% difference in expression across the observed range of variation (although the statistical significance of these individual transcript associations varied, with some dimensions such sex, race, and BMI showing robust effects at a genome-wide false discovery rate (FDR) of 5%, whereas others failed to yield significant effects after correction for multiple testing; Supporting Information Figure S1)."
-
-A longer example (requires access to add)
-=========================================
