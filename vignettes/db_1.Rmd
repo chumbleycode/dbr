@@ -9,17 +9,17 @@ vignette: >
   %\VignetteEncoding{UTF-8}
   ---
   
-  ```{r setup, include = FALSE}
+```{r setup, include = FALSE}
   knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   echo = TRUE)
   knitr::opts_knit$set(root.dir = "../")
-  ```
+```
   
   This example requires read access to the Addhealth longleaf.
   
-  ```{r, warning=F, message=F}
+```{r, warning=F, message=F}
   
 library(tidyverse)
 library(matrixStats)
@@ -30,10 +30,6 @@ library(edgeR)
 
 old_na_action <- options('na.action') # model.matrix() FUSSY ABOUT NA
 options(na.action='na.pass')
-
-```
-
-```{r} 
 
 library(dbr)
 ########################################################
