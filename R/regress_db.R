@@ -12,7 +12,8 @@
 #' @export
 #'
 #' @import broom
-#' @import tidyverse
+#' @importFrom purrr map map_df
+#' @importFrom dplyr filter mutate
 #'
 #' @examples
 regress_db =
@@ -30,7 +31,7 @@ regress_db =
       map_df(~.x) %>%
       mutate(term = names(X))
     out$m_cov =
-      lm(y ~ ., data = X) %>%
+      stats::lm(y ~ ., data = X) %>%
       broom::tidy() %>%
       filter(term != "(Intercept)") # all together
 

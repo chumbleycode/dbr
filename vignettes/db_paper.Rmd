@@ -1,6 +1,6 @@
 ---
 title: "Technical Notes"
-author: "Justin Chumbley, Brand Levitt"
+author: ""
 date: "`r Sys.Date()`"
 output: rmarkdown::pdf_document
 vignette: >
@@ -25,13 +25,11 @@ knitr::opts_knit$set(root.dir = "../")
 
 # The universe of genes and binding-motifs
 
-The broad goal is to relate RNA expression to DNA binding motifs. The universe or domain of our RNA expression data is the set of genes for which we have a meaningful estimate of differential expression between exposure groups. The universe of our DNA binding motif loci data is the set of loci in open chromatin which host any motif targeted by at least one known whole-blood factor (Brandt). These loci can be further divided according to the exact region of the gene in which the loci resides: in the start region, in some exonic region, or both. The specific goal is then to relate the per-gene loci count for a known regulator (DNA) to the amount of differential expression observed in RNA.
+The broad goal is to relate RNA expression to DNA binding motifs. The universe or domain of our RNA expression data is the set of genes for which we have a meaningful estimate of differential expression between exposure groups. The universe of our DNA binding motif loci data is the set of loci in open chromatin which host any motif targeted by at least one known whole-blood factor. These loci can be further divided according to the exact region of the gene in which the loci resides: in the start region, in some exonic region, or both. The specific goal is then to relate the per-gene loci count for a known regulator (DNA) to the amount of differential expression observed in RNA.
 
 # Revisiting TeLiS
 
-The goal of TeLiS was to implicate some gene expression regulator - say CREB3 - in the observed pattern of gene expression over treatment groups. The approach has three steps. In step 1 we identify a sampling frame of $n_g$ genes and label a subset of $k < n_g$ of these genes "differentially expressed"\footnote{This is the set of genes whose differentially expression we can estimate. We therefore ignore, for example, genes with little or no variation in expression over subjects.}. Step 2 uses external bioinformatic information to evaluate the average number of CREB3 DNA binding motifs within our subset of "differentially expressed" genes\footnote{We here define as "motif" any binding site with high affinity for either one or two transcription factors cooperatively. We use the notation $a$, $b$ and $a::b$ for motifs binding to $a$,$b$ or both respectively.}. In step 3 we compare this latter with the average number of CREB3 motifs in a $random$ subset or sample of $k$ genes from the entire population of $n_g$ genes. This assumes a parametric, frequentist hypothesis testing framework: yeilding a p-value about the representativeness of our $k$ sample. This p-value reveals whether our gene set contains a suprising number of motifs, which is itself taken as circumstantial evidence that CREB3 mediated differential expression. TeLiS therefore complements and extends traditional gene-by-gene analyses with DNA information.
-
-# More detail
+The goal of TeLiS was to implicate some gene expression regulator - say CREB3 - in the observed pattern of gene expression over treatment groups. The approach has three steps. In step 1 we identify a sampling frame of $n_g$ genes and label a subset of $k < n_g$ of these genes "differentially expressed"\footnote{This is the set of genes whose differentially expression we can estimate. We therefore ignore, for example, genes with little or no variation in expression over subjects.}. Step 2 uses external bioinformatic information to evaluate the average number of CREB3 DNA binding motifs within our subset of "differentially expressed" genes\footnote{We here define as "motif" any binding site with high affinity for either one or two transcription factors cooperatively. We use the notation $a$, $b$ and $a::b$ for motifs binding to $a$,$b$ or both respectively.}. In step 3 we compare this latter with the average number of CREB3 motifs in a $random$ subset or sample of $k$ genes from the entire population of $n_g$ genes. This assumes a parametric, frequentist hypothesis testing framework and yields a p-value about the representativeness of our $k$ sample. This p-value reveals whether our gene set contains a suprising number of motifs, which is itself taken as circumstantial evidence that CREB3 mediated differential expression. TeLiS therefore complements and extends traditional gene-by-gene analyses with DNA information.
 
 Steps 2 and 3 exploit publically available DNA data repositories that allow us to calculate the number of binding motifs, $m_{ij}$, for each transcription factor $j$ within each gene $i$. This dna data can be arranged as a gene x motif matrix $\textbf{M} = (m_{ij})$. $\textbf{M}$ is an $n_g \times n_b$ matrix linking our gene population $i \in \{1,2,...,n_g \}$ to the set of binding motifs $j \in \{1,2,...,n_b \}$. Note that $m_{ij}=k p_{ij}$ where $k$ is the total number of positions on the genome that host a regulator and $p_{ij}$ is the share of all these sites that bind regulator $j$ in gene $i$.
 
@@ -46,7 +44,7 @@ Because $|\Omega_{n_g,k}|$ is too large to conveniently enumerate, we pursue a s
 Recall our two assumptions, fixed $n$ and random sampling of gene sets $\omega$. The former assumption is inconvenient when $n$ is itself chosen adaptively based on the data. To avoid redefining our sample space, so that $n$ is formally a random variable, we follow other authors and simply condition all inference on $n$ (see below for details on defining $\omega$). The latter assumption seems strong: expression of genes is clustered or correlated, so it would seem that not all $\omega$ are equally likely as assumed by  $\omega \sim U(\Omega_{n_g,k})$. Yet recall that $\omega$ is selected based on differential expression, so it is only relevant whether the gene-specific estimators of differential expression are clustered or correlated. We assume that two estimators are correlated if and only if some co-regulator is responsible for their coordinated differential expression. But then there will be no correlation or clustering between estimators under the null hypothesis, all $\omega$ will be equally likely and $\omega \sim U(\Omega_{n_g,k})$ appears defensible. 
 
 
-# Revisiting step 1: preselecting a gene set 
+# An alternative
 
 We have shown how to test whether individual motifs are implicated in differential expression. This avoids a key question of ambiguity: if two regulators A and B are declared significant, A may be causally responsible for $\omega$ while B may be spurious. B simply has a similar (confounded) motif count pattern across genes to A. TeLiS does not offer such adjustments. This section proposes an alternative which both reduces these false positives - due to this confounding - and false negatives, due to insufficient power. The latter is possible by pooling data over $all$ $n_g$ genes in the gene population - not just the $k$ genes in TeLiS - into the estimation of a single scalar parameter. 
 
@@ -56,7 +54,7 @@ To do this we relax the requirement that genes be first labeled as DE (or not): 
 
 # The TFBM matrix
 
-In this work we only require that some part of the regulator binding motif $j$ overlaps with the 1000 base pairs upstream of the gene $i's$ transcription start site, yet other conditions might be equally applied (such as whether the regulator is in an exon). 
+In this work we only require that some part of the regulator binding motif $j$ overlaps with the 1000 base pairs upstream of the gene $i's$ transcription start site, yet other conditions might be equally applied (such as whether the regulator is in an exon)...
 
 # Discriminating different regulators based $\omega$
 

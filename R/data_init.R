@@ -6,17 +6,19 @@
 #' @param x a tidy object (see below)
 #'
 #' @return blah
-#' @import tidyverse
+#' @importFrom dplyr mutate select
+#' @importFrom tidyr spread unite
+#' @importFrom stringr str_replace_all
 #' @examples
 cleaner = function(x){
 
   # A FORMATTING FUNCTION, SEE BELOW
   x =
     x %>%
-    unite(tf, tf1, tf2, sep = "_", remove = F) %>%
-    mutate(tf = str_replace_all(tf, "_$", "")) %>%
+    tidyr::unite(tf, tf1, tf2, sep = "_", remove = F) %>%
+    dplyr::mutate(tf = stringr::str_replace_all(tf, "_$", "")) %>%
     dplyr::count(hgnc, tf) %>%
-    spread(tf, n, fill = 0)
+    tidyr::spread(tf, n, fill = 0)
 
   x =
     x %>%
@@ -31,7 +33,7 @@ cleaner = function(x){
 #' makes all the tfbm matrices
 #'
 #' @return
-#' @import tidyverse
+#' @importFrom dplyr filter if_else
 #' @examples
 make_the_matrices = function(){
 
@@ -40,7 +42,7 @@ make_the_matrices = function(){
   tfbs0  =
     tfbs0 %>%
     dplyr::filter(tfindex != "tfindex") %>%  # remove erroneous rows
-    dplyr::mutate(tf2 = if_else(is.na(tf2), "", tf2))
+    dplyr::mutate(tf2 = dplyr::if_else(is.na(tf2), "", tf2))
 
   ########################################################
   # THREE DIFFERENT TYPES OF MATRIX

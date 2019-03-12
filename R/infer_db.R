@@ -16,6 +16,7 @@
 #' @param perm_telis if ttT_sub is provided, do you want non-parameteric permutation TeLiS in addition to parametric
 #'
 #' @return blah
+#'
 #' @export
 #'
 #' @examples
@@ -38,9 +39,9 @@ infer_db =
     # REGRESSIONS
     m =
       ttT %>%
-      select(B,t,AveExpr,logFC) %>%     # THE VARIOUS OUTCOMES y
-      map(regress_db,                  #
-          X = select(ttT, colnames(R))) # X = THE RHS OF THE REGRESSIONS
+      dplyr::select(B,t,AveExpr,logFC) %>%     # THE VARIOUS OUTCOMES y
+      purrr::map(regress_db,                  #
+          X = dplyr::select(ttT, colnames(R))) # X = THE RHS OF THE REGRESSIONS
 
     return(out = list(ttT   = ttT,
                       telis = telis,
@@ -94,7 +95,7 @@ append_matrix <- function(ttT = ttT, ttT_sub = ttT_sub, R = R){
     as_tibble(R, rownames = "gene") %>%
     left_join(ttT, by = "gene") %>%
     mutate(gene_subset = gene %in% ttT_sub$gene) %>% # A la TeLiS, possibly null
-    select(names(ttT), gene_subset, colnames(R)) # reorder collumns
+    dplyr::select(names(ttT), gene_subset, colnames(R)) # reorder collumns
 
   return(ttT = ttT)
 }
@@ -170,6 +171,7 @@ get_matrix <- function(ttT = ttT, which_matrix = which_matrix, which_tfbms = whi
 get_telis <- function(R = R, ttT_sub = ttT_sub, n_sim = n_sim, perm_telis = FALSE){
 
   telis = NULL
+
   ########################################################
   # TELIS p values
   ########################################################
@@ -184,8 +186,8 @@ get_telis <- function(R = R, ttT_sub = ttT_sub, n_sim = n_sim, perm_telis = FALS
 
   mu = colMeans(R)
   se = matrixStats::colSds(R)/sqrt(n_gene)
-  telis$par$p_under  = pnorm(obs, mu, se, lower.tail = T) %>% as.vector %>% `names<-`(names(mu)) # downregulation
-  telis$par$p_over   = pnorm(obs, mu, se, lower.tail = F) %>% as.vector %>% `names<-`(names(mu)) # upregulation
+  telis$par$p_under = stats::pnorm(obs, mu, se, lower.tail = T) %>% as.vector %>% `names<-`(names(mu)) # downregulation
+  telis$par$p_over  = stats::pnorm(obs, mu, se, lower.tail = F) %>% as.vector %>% `names<-`(names(mu)) # upregulation
 
   if(perm_telis) {
 
@@ -197,14 +199,14 @@ get_telis <- function(R = R, ttT_sub = ttT_sub, n_sim = n_sim, perm_telis = FALS
     # NON PARAMETRIC MONTE CARLO NULL DISTRIBUTION
     ########################################################
 
-    sims = rerun(n_sim, sample(responsive_lgl))
+    sims = purrr::rerun(n_sim, sample(responsive_lgl))
     sims = matrix(unlist(sims), nrow = n_sim, byrow = T)
     sims = unique(sims) # for purists: this ensures that we only sample from the set of all possible permutations, WITH replacement
 
     S    = (sims / n_gene) %*% R              # mean motif-count-per-gene statistic is a linear function of omega
 
-    telis$npar$p_under  = map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y >= .x)) # down regulation?
-    telis$npar$p_over   = map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y <= .x)) # up regulation?
+    telis$npar$p_under  = purrr::map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y >= .x)) # down regulation?
+    telis$npar$p_over   = purrr::map2_dbl(.x = as_tibble(S), .y = obs, ~ mean(.y <= .x)) # up regulation?
 
   }
 

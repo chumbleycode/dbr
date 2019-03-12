@@ -10,7 +10,7 @@ License: GPL-2
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
-Imports: broom, tidyverse, stats, graphics, knitr, tidyr, data.table, dplyr, usethis, matrixStats, limma, Biobase, GEOquery, edgeR
+Imports: broom, stats, graphics, knitr, tidyr, data.table, dplyr, purrr, stringr, tibble, usethis, matrixStats, limma, Biobase, GEOquery, edgeR
 Depends: R (>= 2.10)
 VignetteBuilder: knitr
 biocViews:

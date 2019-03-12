@@ -19,7 +19,9 @@
 #' @export
 #'
 #' @import broom
-#' @import tidyverse
+#' @importFrom dplyr left_join
+#' @importFrom purrr is_empty
+#' @importFrom tibble enframe
 #'
 #' @examples
 extract_db =
@@ -29,10 +31,10 @@ extract_db =
     # Works even if all parameters in the multiple regression are identified (na in output, so the dimension of p_uni and p_cov are mismatched)
     out =
       outcome$m_uni %>%
-      select(tfbm = term,
+      dplyr::select(tfbm = term,
              estimate_uni = estimate,
              p_uni = p.value) %>%
-      left_join(select(outcome$m_cov,
+      dplyr::left_join(select(outcome$m_cov,
                        tfbm = term,
                        estimate_cov = estimate,
                        p_cov = p.value), by = "tfbm")
@@ -43,11 +45,11 @@ extract_db =
       out_telis =
         x$telis %>%
         unlist %>%
-        enframe %>%
+        tibble::enframe %>%
         tidyr::separate(name, c("method", "side", "tfbm"), sep = "\\.") %>%
-        unite("method", c("method", "side")) %>%
-        spread(method, value) %>%
-        mutate(p_par  =  2 * pmin(par_p_under, par_p_over)) #,
+        tidyr::unite("method", c("method", "side")) %>%
+        tidyr::spread(method, value) %>%
+        dplyr::mutate(p_par  =  2 * pmin(par_p_under, par_p_over)) #,
                # p_npar =  NA) # check: 2 * for two tails
 
       if(!is_empty(x$telis$npar)){
@@ -55,16 +57,16 @@ extract_db =
         # If costly permutation analysis is done, overwrite NA
          out_telis =
           out_telis %>%
-          mutate(p_npar = pmin(1, 2 * pmin(npar_p_under, npar_p_over)))
+          dplyr::mutate(p_npar = pmin(1, 2 * pmin(npar_p_under, npar_p_over)))
 
       }
       out =
         out %>%
-        left_join(out_telis, by = "tfbm")
+        dplyr::left_join(out_telis, by = "tfbm")
 
     }
 
-    if(!is.null(methods)) out = out %>% select(tfbm, methods) # possibly subset
+    if(!is.null(methods)) out = out %>% dplyr::select(tfbm, methods) # possibly subset
     return(out = out)
   }
 
