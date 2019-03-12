@@ -1,1 +1,1 @@
-This is the first version of this package.
+# mypackage 1.0
