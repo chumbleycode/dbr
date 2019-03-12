@@ -18,7 +18,6 @@
 #' @importFrom limma topTable
 #' @examples
 tidy_topTable = function(x, of_in, ...) {
- # browser()
   x %>%
     limma::topTable(coef = of_in, n = Inf, ...) %>%
     dplyr::as_tibble(rownames = "gene")
@@ -46,7 +45,7 @@ disp =
       unlist %>%
       `[`(. <= 0.05) %>%
       sort %>%
-      enframe("tf", "p_value") %>%
+      tibble::enframe("tf", "p_value") %>%
       knitr::kable()
   }
 

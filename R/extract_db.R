@@ -45,7 +45,7 @@ extract_db =
       out_telis =
         x$telis %>%
         unlist %>%
-        tibble::enframe %>%
+        tibble::enframe() %>%
         tidyr::separate(name, c("method", "side", "tfbm"), sep = "\\.") %>%
         tidyr::unite("method", c("method", "side")) %>%
         tidyr::spread(method, value) %>%
