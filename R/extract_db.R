@@ -6,16 +6,26 @@
 #' extract_db
 #'
 #' A TABLE OF P-VALUES FOR DIFFERENT METHODS:
-#' p_uni  = SIMPLE UNIVARIATE REGRESSION OF B ON EACH TFBM
-#' p_cov  = MULTPLE REGRESSION OF B ON ALL TFBM's SIMULTANIOUSLY
-#' p_par  = parametric telis, RETURNED  ONLY IF ARGUMENT 'tT_sub' IS GIVEN TO "db"
-#' p_npar = nonparametric telis, RETURNED  ONLY IF ARGUMENT 'tT_sub' IS GIVEN TO "db"
 #'
-#' @param x   blah
-#' @param methods  blah
+
+#'
+#' @param x   the output of \code{\link{infer_db}}
+#' @param methods  depricated
 #' @param which_outcome in general the outcome variable may be chosen as logFC, B, etc
 #'
-#' @return  blah
+#' @return
+#'
+#'  A tibble whose columns give tfbm p-values for various methods:
+#'
+#' \itemize{
+#'  \item p_par two-tailed p-value from parametric telis, returned  only if argument 'tt_sub' is given to \code{\link[dbr]{infer_db}}.
+#'  \item par_p_over  = upper tailed one-sided p-value for p_par
+#'  \item par_p_under = lower tailed one-sided p-value for p_par
+#'  \item p_uni  = simple univariate regression of b on each tfbm
+#'  \item p_cov  = multple regression of b on all tfbm's simultaniously
+#'  \item p_npar = nonparametric telis, returned  only if infer_db() argument 'tt_sub' is provided and perm_telis = f
+#' }
+#'
 #' @export
 #'
 #' @import broom
@@ -23,6 +33,7 @@
 #' @importFrom purrr is_empty
 #' @importFrom tibble enframe
 #'
+#' @seealso \code{\link[dbr]{infer_db}}
 #' @examples
 extract_db =
   function(x, which_outcome = "logFC", methods = NULL){
