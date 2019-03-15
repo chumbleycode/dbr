@@ -1,28 +1,26 @@
-# UTR TFBM
-#' Exonic and UTR TFBM
+#'A gene by transcription factor binding motif matrix.
 #'
-#' A dataset containing ..
+#' Broadly, this contains binding loci counts for each transcription factor motif in each gene. In particular, it counts the number of times any part of the transcription factor binding motif overlaps with the 1000 base pairs upstream of the transcription start site.
 #'
-#' @format A TFBM matrix
-#'
-#' @source Brandt
+#' @format A gene by transcription factor binding motif matrix.
+#' @source biomart
 "utr1"
 
-#' Exonic TFBM
+#'A gene by transcription factor binding motif matrix.
 #'
-#' A dataset containing ..
+#' Broadly, this contains binding loci counts for each transcription factor motif in each gene. In particular, it counts the number of times any part of the transcription factor binding motif overlaps with an exon.
 #'
-#' @format A TFBM matrix
+#' @format A gene by transcription factor binding motif matrix.
 #'
-#' @source Brandt
+#' @source biomart
 "exonic1"
 
 
-#' Exonic and UTR TFBM
+#'A gene by transcription factor binding motif matrix.
 #'
-#' A dataset containing ..
+#' Broadly, this contains binding loci counts for each transcription factor motif in each gene. In particular, it counts the number of times any part of the transcription factor binding motif overlaps with an exon AND simultaneously overlaps with the 1000 base pairs upstream of the transcription start site.
 #'
-#' @format A TFBM matrix
+#' @format A gene by transcription factor binding motif matrix.
 #'
-#' @source Brandt
+#' @source biomart
 "exonic1_utr1"

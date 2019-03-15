@@ -3,15 +3,15 @@
 \docType{data}
 \name{exonic1_utr1}
 \alias{exonic1_utr1}
-\title{Exonic and UTR TFBM}
-\format{A TFBM matrix}
+\title{A gene by transcription factor binding motif matrix.}
+\format{A gene by transcription factor binding motif matrix.}
 \source{
-Brandt
+biomart
 }
 \usage{
 exonic1_utr1
 }
 \description{
-A dataset containing ..
+Broadly, this contains binding loci counts for each transcription factor motif in each gene. In particular, it counts the number of times any part of the transcription factor binding motif overlaps with an exon AND simultaneously overlaps with the 1000 base pairs upstream of the transcription start site.
 }
 \keyword{datasets}
