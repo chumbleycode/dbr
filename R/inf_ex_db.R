@@ -44,7 +44,7 @@ inf_ex_db =
       voom(counts = counts[, ok],
            design = design[ok, ]) %>% # arrayWeights %>%
       limma::lmFit() %>%
-      limma::eBayes %>%
+      limma::eBayes() %>%
       limma::topTable(coef = of_in, number = Inf) %>%
       dplyr::as_tibble(rownames = "gene")
 
