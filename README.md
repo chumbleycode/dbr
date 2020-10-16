@@ -3,7 +3,7 @@
 Differential Binding (dbr)
 ==========================
 
-[![Travis build status](https://travis-ci.org/chumbleycode/dbr.svg?branch=master)](https://travis-ci.org/chumbleycode/dbr) [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/chumbleycode/dbr?branch=master&svg=true)](https://ci.appveyor.com/project/chumbleycode/dbr)
+[![Travis build status](https://travis-ci.org/chumbleycode/dbr.svg?branch=master)](https://travis-ci.org/chumbleycode/dbr) 
 
 The goal of dbr is to implicate a gene *r**e**g**u**l**a**t**o**r* - typically an upstream transcription factor - in the differential RNA expression observed between treatment groups. We then say that there is "differential binding" (DB) of the regulator over treatments. In practice, dbr asks whether the pattern of differential RNA expression over genes reflects (the per-gene count of DNA binding-site motifs for) some upstream gene regulator.
 
