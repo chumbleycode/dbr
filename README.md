@@ -3,9 +3,10 @@
 Differential Binding (dbr)
 ==========================
 
+To cite code: [![DOI](https://zenodo.org/badge/171730256.svg)](https://zenodo.org/badge/latestdoi/171730256)
+
 [![Travis build status](https://travis-ci.org/chumbleycode/dbr.svg?branch=master)](https://travis-ci.org/chumbleycode/dbr) 
 
-Cite code: [![DOI](https://zenodo.org/badge/171730256.svg)](https://zenodo.org/badge/latestdoi/171730256)
 
 
 
